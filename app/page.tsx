@@ -229,13 +229,6 @@ function TotalDownloadsCounter() {
           className="h-20 w-20 cursor-pointer select-none transition-transform duration-300 hover:scale-110 hover:-rotate-3 active:scale-95"
           style={{ transitionTimingFunction: SPRING }}
         />
-        <p className="-mt-4 flex items-center gap-1 font-sans text-sm sm:text-base text-neutral-500">
-          <span className="text-xs text-neutral-400">Used by</span>
-          <span className=" text-sm font-sans font-medium text-neutral-800 tabular-nums">
-            {loading && count === 0 ? "..." : count.toLocaleString()}
-          </span>
-          <span className="text-xs text-neutral-400"> developers</span>
-        </p>
       </a>
     </div>
   );
