@@ -7,6 +7,7 @@ import Sponsor from "../components/landing/sponsor"
 import GetStarted from "../components/landing/get-started"
 import Footer from "../components/landing/footer"
 import { VisitorCounter, GitHubStarButton } from "../components/landing/nav-actions"
+import { HeroVideoBackground } from "../components/landing/hero-video-background"
 
 /* ---------- data ---------- */
 
@@ -123,7 +124,9 @@ function DraggableSticker({
             rotate: `${rotate + (drag ? -5 : hover ? 8 : 0)}deg`,
             scale: drag ? 1.14 : hover ? 1.06 : 1,
             cursor: drag ? "grabbing" : "grab",
-            filter: drag ? "drop-shadow(0 16px 14px rgba(0,0,0,0.18))" : "none",
+            filter: drag
+              ? "drop-shadow(0 18px 18px rgba(0,0,0,0.32))"
+              : "drop-shadow(0 8px 16px rgba(0,0,0,0.22))",
             transition: `scale 450ms ${SPRING}, rotate 450ms ${SPRING}`,
           }}
         >
@@ -153,7 +156,7 @@ function HeroSticker({ src, delay }: { src: string; delay: number }) {
         onClick={() => setTurns((t) => t + 1)}
         onPointerEnter={() => setHover(true)}
         onPointerLeave={() => setHover(false)}
-        className="mx-1 inline-block h-[0.92em] w-[0.92em] cursor-pointer select-none align-middle sm:mx-2 hover:rotate-15"
+        className="mx-1 inline-block h-[0.92em] w-[0.92em] cursor-pointer select-none align-middle drop-shadow-[0_4px_12px_rgba(0,0,0,0.24)] sm:mx-2 hover:rotate-15"
         style={{
           rotate: `${turns * 360 + (hover ? 14 : 0)}deg`,
           scale: hover ? 1.1 : 1,
@@ -226,7 +229,7 @@ function TotalDownloadsCounter() {
           src="/stickers/Component-66.svg"
           alt="stick-blush"
           draggable={false}
-          className="h-20 w-20 cursor-pointer select-none transition-transform duration-300 hover:scale-110 hover:-rotate-3 active:scale-95"
+          className="h-20 w-20 cursor-pointer select-none drop-shadow-[0_8px_18px_rgba(0,0,0,0.24)] transition-transform duration-300 hover:scale-110 hover:-rotate-3 active:scale-95"
           style={{ transitionTimingFunction: SPRING }}
         />
       </a>
@@ -410,10 +413,18 @@ export default function Home() {
             <img
               src="/stickers/logo.svg"
               alt="Stick it up logo"
-              className="h-9 w-9 rounded-lg transition-transform duration-200
-                group-hover:-rotate-6 group-hover:scale-110"
+              className={`h-9 w-9 rounded-lg transition-all duration-200
+                group-hover:-rotate-6 group-hover:scale-110 ${
+                  isAtTop ? "ring-1 ring-white/25 shadow-xs" : ""
+                }`}
             />
-            <span className="text-lg font-semibold tracking-tight text-zinc-900">
+            <span
+              className={`text-lg font-semibold tracking-tight transition-colors duration-200 ${
+                isAtTop
+                  ? "text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]"
+                  : "text-zinc-900"
+              }`}
+            >
               Stick it up
             </span>
           </Link>
@@ -424,27 +435,31 @@ export default function Home() {
               { label: "Stickers", href: "/stickers" },
               { label: "Docs", href: "/stickers#docs" },
               { label: "npm", href: "https://www.npmjs.com/package/stick-blush" },
-            ].map((link) => (
-              <li key={link.label}>
-                {link.href.startsWith("http") ? (
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-lg px-3.5 py-2 text-sm font-medium text-zinc-600 transition-colors duration-150 hover:bg-zinc-100 hover:text-zinc-900"
-                  >
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link
-                    href={link.href}
-                    className="rounded-lg px-3.5 py-2 text-sm font-medium text-zinc-600 transition-colors duration-150 hover:bg-zinc-100 hover:text-zinc-900"
-                  >
-                    {link.label}
-                  </Link>
-                )}
-              </li>
-            ))}
+            ].map((link) => {
+              const linkClass = `rounded-lg px-3.5 py-2 text-sm font-medium transition-colors duration-150 ${
+                isAtTop
+                  ? "text-white/90 hover:bg-white/15 hover:text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]"
+                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+              }`;
+              return (
+                <li key={link.label}>
+                  {link.href.startsWith("http") ? (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={linkClass}
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link href={link.href} className={linkClass}>
+                      {link.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
 
           {/* visitor counter & github star */}
@@ -460,10 +475,12 @@ export default function Home() {
         ref={heroRef}
         onClick={onClick}
         onPointerMove={onPointerMove}
-        className="relative w-full overflow-hidden"
+        className="relative min-h-[600px] w-full overflow-hidden sm:min-h-[680px]"
       >
+        <HeroVideoBackground />
+
         {/* stickers layer (draggable, parallax, floating) */}
-        <div ref={stickersLayerRef} className="pointer-events-none absolute inset-0 z-20 h-200">
+        <div ref={stickersLayerRef} className="pointer-events-none absolute inset-0 z-30">
           <DraggableSticker
             src="/stickers/blueberry.svg"
             size={120}
@@ -533,9 +550,9 @@ export default function Home() {
 
         {/* hero */}
         <section
-          className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-16 mt-15 text-center md:pt-24"
+          className="relative z-20 mx-auto flex max-w-4xl flex-col items-center px-6 pt-32 pb-28 text-center sm:pt-36 md:pt-40 md:pb-32"
         >
-          <h1 className="font-sans text-4xl font-normal leading-[1.1] tracking-tight text-zinc-900 sm:text-6xl lg:text-7xl">
+          <h1 className="font-sans text-4xl font-normal leading-[1.1] tracking-tight text-white [text-shadow:0_2px_20px_rgba(4,24,19,0.5)] sm:text-6xl lg:text-7xl">
             {HERO.map((token, i) => {
               const delay = 80 + i * 55;
               return typeof token === "string" ? (
@@ -570,8 +587,8 @@ export default function Home() {
               transition-all duration-300 ease-out
               hover:-translate-y-px active:translate-y-px active:shadow-inner
               ${copied
-                  ? "border-emerald-300 from-emerald-50 to-emerald-100/70 text-emerald-700"
-                  : "border-zinc-300 from-white to-zinc-50 text-zinc-700 hover:border-zinc-400 hover:shadow-[inset_0_1px_0_white,0_2px_4px_#0000000a]"
+                  ? "border-emerald-300 from-emerald-50 to-emerald-100/80 text-emerald-700 backdrop-blur-md shadow-[0_8px_20px_rgba(0,0,0,0.18)]"
+                  : "border-white/75 from-white/95 to-zinc-50/95 text-zinc-800 backdrop-blur-md shadow-[inset_0_1px_0_white,0_8px_20px_rgba(0,0,0,0.18)] hover:border-white hover:shadow-[inset_0_1px_0_white,0_10px_24px_rgba(0,0,0,0.22)]"
                 }`}
             >
               {/* Text swap: both states share one grid cell, so the button width never shifts */}
@@ -651,11 +668,11 @@ export default function Home() {
             <Link
               href="/stickers"
               className="group inline-flex cursor-pointer items-center gap-2 rounded-xl
-              border border-zinc-800 bg-gradient-to-b from-zinc-800 to-zinc-900
-              px-5 py-3 text-sm font-medium text-white
-              shadow-[inset_0_1px_0_#ffffff18,0_1px_2px_#00000015]
+              border border-white/20 bg-gradient-to-b from-zinc-900/95 to-zinc-950
+              px-5 py-3 text-sm font-medium text-white backdrop-blur-md
+              shadow-[inset_0_1px_0_#ffffff24,0_8px_20px_rgba(0,0,0,0.28)]
               transition-all duration-150
-              hover:-translate-y-px hover:from-zinc-700 hover:to-zinc-800
+              hover:-translate-y-px hover:from-zinc-800 hover:to-zinc-900
               active:translate-y-px active:shadow-inner"
             >
               <span>Explore stickers</span>

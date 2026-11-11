@@ -6,8 +6,8 @@ export default function robots(): MetadataRoute.Robots {
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "https://stickitupp.vercel.app");
+        ? `https://${process.env.VERCEL_URL}`
+        : "https://stickitupp.vercel.app");
 
   return {
     rules: {
