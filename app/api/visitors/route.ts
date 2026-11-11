@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { getDb } from "../../../lib/db";
+import { ensureVisitorTables, getDb } from "../../../lib/db";
 
 // Fallback in-memory visitor store when DATABASE_URL is not configured locally
 const DEFAULT_SITE = "stick-it-up";
@@ -78,6 +78,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const sql = getDb();
+    await ensureVisitorTables(sql);
 
     // Query site stats
     const rows = await sql`
@@ -184,6 +185,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const sql = getDb();
+    await ensureVisitorTables(sql);
 
     // 1. Ensure site exists
     await sql`
@@ -192,16 +194,27 @@ export async function POST(req: NextRequest) {
       ON CONFLICT (site_name) DO NOTHING;
     `;
 
-    // 2. Check or upsert visitor
+    // 2. Check previous visit timestamp before upsert, then upsert visitor
     // (xmax = 0) returns true if the row was freshly inserted (new unique visitor)
     const visitorRows = await sql`
-      INSERT INTO site_visitors (site_name, visitor_hash, first_visited_at, last_visited_at, visit_count)
-      VALUES (${site}, ${visitorHash}, NOW(), NOW(), 1)
-      ON CONFLICT (site_name, visitor_hash)
-      DO UPDATE SET
-        last_visited_at = NOW(),
-        visit_count = site_visitors.visit_count + 1
-      RETURNING (xmax = 0) AS is_new_unique, first_visited_at, (NOW() - site_visitors.last_visited_at) > INTERVAL '15 minutes' AS cooled_down;
+      WITH prev AS (
+        SELECT last_visited_at
+        FROM site_visitors
+        WHERE site_name = ${site} AND visitor_hash = ${visitorHash}
+      ),
+      upserted AS (
+        INSERT INTO site_visitors (site_name, visitor_hash, first_visited_at, last_visited_at, visit_count)
+        VALUES (${site}, ${visitorHash}, NOW(), NOW(), 1)
+        ON CONFLICT (site_name, visitor_hash)
+        DO UPDATE SET
+          last_visited_at = NOW(),
+          visit_count = site_visitors.visit_count + 1
+        RETURNING (xmax = 0) AS is_new_unique
+      )
+      SELECT
+        upserted.is_new_unique,
+        COALESCE((SELECT (NOW() - prev.last_visited_at) > INTERVAL '15 minutes' FROM prev), FALSE) AS cooled_down
+      FROM upserted;
     `;
 
     const isNewUnique = Boolean(visitorRows[0]?.is_new_unique);
