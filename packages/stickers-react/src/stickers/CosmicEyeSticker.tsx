@@ -1,0 +1,56 @@
+import React, { useId } from "react";
+import type { StickerProps } from "../types";
+import { usePeel } from "../utils/usePeel";
+
+export const CosmicEyeSticker: React.FC<StickerProps> = ({
+  size = 120,
+  width,
+  height,
+  peel = false,
+  className = "",
+  style,
+  ...props
+}) => {
+  const rawId = useId();
+  const id = rawId.replace(/[:]/g, "_");
+
+  const finalWidth = width ?? size;
+  const finalHeight = height ?? size;
+  const { style: peelStyle, onMouseEnter, onMouseLeave } = usePeel(peel, style);
+
+  return (
+    <svg
+      width={finalWidth}
+      height={finalHeight}
+      viewBox="0 0 516 464"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={peelStyle}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      aria-label="cosmic-eye Sticker"
+      role="img"
+      {...props}
+    >
+      <g filter={`url(#filter0_d_36_3_${id})`}>
+<path d="M231.805 56.2017C236.541 53.9054 242.221 54.9642 245.812 58.8121L352.571 173.197L463.589 99.9048C467.826 97.1074 473.367 97.2806 477.422 100.336C481.477 103.393 483.17 108.671 481.648 113.515L439.768 246.871L505.295 311.325C508.522 314.5 509.689 319.221 508.31 323.534C506.932 327.846 503.243 331.015 498.772 331.729L374.751 351.53L355.321 360.715L341.54 421.148C340.698 424.841 338.16 427.92 334.696 429.453C331.232 430.986 327.248 430.793 323.948 428.933L266.88 396.768L212.8 436.289C209.181 438.933 204.391 439.34 200.378 437.345C196.365 435.35 193.798 431.284 193.722 426.803L192.792 371.961L141.297 379.319C136.625 379.986 131.996 377.853 129.468 373.869C126.94 369.884 126.981 364.787 129.575 360.844L153.059 325.148L113.935 287.98C111.049 285.239 109.711 281.244 110.361 277.318C111.012 273.392 113.567 270.044 117.183 268.379L167.976 244.998L89.3652 139.113C86.16 134.795 86.2175 128.872 89.5068 124.619C92.7961 120.365 98.5141 118.819 103.499 120.835L241.705 176.727L225.179 68.816C224.382 63.6131 227.068 58.498 231.805 56.2017Z" fillRule="evenodd" clipRule="evenodd" fill="white"/>
+</g>
+<path d="M212.68 285.08L99 131.96L256.76 195.76L237.04 67L350.72 188.8L470.2 109.92L426.12 250.28L496.88 319.88L358.84 341.92L212.68 285.08Z" fill="#533BFF"/>
+<path d="M168.6 323.36L122.2 279.28L195.28 245.64L170.92 187.64L246.32 207.36L285.76 151.68L310.12 216.64L378.56 206.2L361.16 274.64L408.72 322.2L344.92 352.36L329.84 418.48L266.04 382.52L205.72 426.6L204.56 358.16L139.6 367.44L168.6 323.36Z" fill="#FF3028"/>
+<path d="M220.354 299.765C252.316 261.302 288.96 256.152 330.286 284.315C298.324 322.778 261.68 327.928 220.354 299.765Z" fill="white"/>
+<path d="M280.263 315.125C291.302 313.574 298.783 301.876 296.973 288.997C295.163 276.118 284.747 266.936 273.708 268.487C262.67 270.039 255.188 281.737 256.998 294.615C258.808 307.494 269.224 316.676 280.263 315.125Z" fill="#090909"/>
+<defs>
+<filter id={`filter0_d_36_3_${id}`} x="80" y="50.7993" width="435.88" height="397.601" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2.8"/>
+<feGaussianBlur stdDeviation="3.5"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_36_3"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_36_3" result="shape"/>
+</filter>
+</defs>
+    </svg>
+  );
+};

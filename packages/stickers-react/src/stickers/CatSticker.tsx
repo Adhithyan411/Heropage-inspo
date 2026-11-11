@@ -1,0 +1,61 @@
+import React, { useId } from "react";
+import type { StickerProps } from "../types";
+import { usePeel } from "../utils/usePeel";
+
+export const CatSticker: React.FC<StickerProps> = ({
+  size = 120,
+  width,
+  height,
+  peel = false,
+  className = "",
+  style,
+  ...props
+}) => {
+  const rawId = useId();
+  const id = rawId.replace(/[:]/g, "_");
+
+  const finalWidth = width ?? size;
+  const finalHeight = height ?? size;
+  const { style: peelStyle, onMouseEnter, onMouseLeave } = usePeel(peel, style);
+
+  return (
+    <svg
+      width={finalWidth}
+      height={finalHeight}
+      viewBox="0 0 464 464"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={peelStyle}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      aria-label="cat Sticker"
+      role="img"
+      {...props}
+    >
+      <g filter={`url(#filter0_d_36_90_${id})`}>
+<path d="M383.571 50.04C387.464 47.6962 392.347 47.7523 396.185 50.1855C400.023 52.6189 402.158 57.012 401.699 61.5332L387.043 205.82C398.675 224.542 403.568 244.272 400.779 264.657C397.847 286.079 386.626 306.817 368.679 326.849C335.304 366.804 290.155 387.02 234.497 387.839C234.491 387.839 234.484 387.839 234.478 387.839C173.051 388.647 124.717 369.951 91.685 330.144C91.6263 330.073 91.5683 330.001 91.5112 329.929C75.6701 309.919 66.2353 288.657 64.0366 266.231C61.9438 244.885 66.4948 223.374 77.0151 201.911L62.3061 62.7412C61.8314 58.2484 63.9208 53.8701 67.7114 51.4121C71.5021 48.9541 76.352 48.833 80.2602 51.0996L191.177 115.432C219.034 104.846 247.168 104.83 275.026 115.387L383.571 50.04Z" fillRule="evenodd" clipRule="evenodd" fill="white"/>
+</g>
+<path d="M89.32 204.16L74.24 61.4801L190.24 128.76C218.853 116.387 247.467 116.387 276.08 128.76L389.76 60.3201L374.68 208.8C398.653 244.373 393.627 281.107 359.6 319C328.667 356.12 286.907 375.067 234.32 375.84C175.547 376.613 131.08 358.827 100.92 322.48C71.5333 285.36 67.6667 245.92 89.32 204.16Z" fill="#533BFF"/>
+<path d="M102.08 96.28L120.64 176.32L165.88 146.16L102.08 96.28Z" fill="#FF829C"/>
+<path d="M360.76 96.28L341.04 177.48L301.6 145L360.76 96.28Z" fill="#FF829C"/>
+<path d="M124.735 240.157C156.923 223.562 182.806 230.498 202.384 260.963C170.197 277.558 144.314 270.622 124.735 240.157Z" fill="white"/>
+<path d="M157.822 266.502C161.037 267.363 165.619 260.687 168.057 251.591C170.494 242.494 169.864 234.421 166.648 233.56C163.433 232.698 158.851 239.374 156.413 248.471C153.976 257.568 154.606 265.64 157.822 266.502Z" fill="#090909"/>
+<path d="M263.936 260.963C283.514 230.498 309.397 223.562 341.584 240.157C322.006 270.622 296.123 277.558 263.936 260.963Z" fill="white"/>
+<path d="M308.825 266.281C311.585 265.542 311.847 257.568 309.409 248.471C306.972 239.374 302.758 232.6 299.998 233.339C297.238 234.079 296.976 242.053 299.413 251.149C301.851 260.246 306.064 267.021 308.825 266.281Z" fill="#090909"/>
+<path d="M216.92 287.68H250.56L234.32 301.6L216.92 287.68Z" fill="#FF829C"/>
+<path d="M186.76 317.84C217.693 335.627 249.787 331.373 283.04 305.08C271.44 336.013 253.267 348.387 228.52 342.2L186.76 317.84Z" fill="white"/>
+<defs>
+<filter id={`filter0_d_36_90_${id}`} x="52.2395" y="42.3206" width="359.521" height="359.543" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="5"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_36_90"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_36_90" result="shape"/>
+</filter>
+</defs>
+    </svg>
+  );
+};

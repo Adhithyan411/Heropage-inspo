@@ -1,0 +1,258 @@
+import React from "react";
+import type { StickerProps } from "../types";
+import { usePeel } from "../utils/usePeel";
+
+export const CoffeeSticker: React.FC<StickerProps> = ({
+  size = 120,
+  width,
+  height,
+  peel = false,
+  className = "",
+  style,
+  ...props
+}) => {
+  const finalWidth = width ?? size;
+  const finalHeight = height ?? size;
+  const { style: peelStyle, onMouseEnter, onMouseLeave } = usePeel(peel, style);
+
+  return (
+    <svg
+      width={finalWidth}
+      height={finalHeight}
+      viewBox="0 0 464 464"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={peelStyle}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      aria-label="Coffee Sticker"
+      role="img"
+      {...props}
+    >
+      <path
+        d="M312.04 162.4C431.52 124.12 437.32 292.32 327.12 308.56L319 276.08C383.96 267.96 390.92 187.92 320.16 197.2L312.04 162.4Z"
+        fill="#090909"
+        strokeWidth="25.52"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M114.84 153.12H334.08L313.2 365.4C249.013 394.787 189.467 394.787 134.56 365.4L114.84 153.12Z"
+        fill="#090909"
+        strokeWidth="25.52"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M99.7601 140.36C180.187 117.933 262.16 117.547 345.68 139.2L350.32 175.16C265.253 193.72 180.187 193.72 95.1201 175.16L99.7601 140.36Z"
+        fill="#090909"
+        strokeWidth="25.52"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M129.92 128.76L146.16 91.6401C197.2 78.4934 249.787 78.8801 303.92 92.8001L322.48 129.92L129.92 128.76Z"
+        fill="#090909"
+        strokeWidth="25.52"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M175.16 68.44C156.6 52.2 156.987 37.12 176.32 23.2L193.72 30.16C179.027 40.9866 179.8 52.2 196.04 63.8L175.16 68.44Z"
+        fill="#090909"
+        strokeWidth="25.52"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M256.36 67.2799C238.573 52.5866 238.96 37.1199 257.52 20.8799L276.08 28.9999C262.933 40.5999 263.32 51.8132 277.24 62.6399L256.36 67.2799Z"
+        fill="#090909"
+        strokeWidth="25.52"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M148.722 253.234C173.444 238.803 194.163 243.207 210.878 266.446C186.156 280.877 165.437 276.473 148.722 253.234Z"
+        fill="#090909"
+        strokeWidth="21.1816"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M177.939 273.225C184.181 274.552 190.495 269.724 192.043 262.443C193.591 255.161 189.786 248.182 183.544 246.856C177.303 245.529 170.988 250.357 169.441 257.638C167.893 264.92 171.698 271.898 177.939 273.225Z"
+        fill="#090909"
+        strokeWidth="21.1816"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M238.042 257.166C254.757 233.927 275.476 229.523 300.198 243.954C283.483 267.193 262.764 271.597 238.042 257.166Z"
+        fill="#090909"
+        strokeWidth="21.1816"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M272.864 263.545C279.106 262.218 282.911 255.239 281.363 247.958C279.815 240.676 273.501 235.849 267.259 237.175C261.018 238.502 257.213 245.48 258.761 252.762C260.309 260.044 266.623 264.871 272.864 263.545Z"
+        fill="#090909"
+        strokeWidth="21.1816"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M187.92 309.72C212.667 327.507 239.347 324.413 267.96 300.44C257.133 336.013 230.453 339.107 187.92 309.72Z"
+        fill="#090909"
+        strokeWidth="25.52"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#090909"
+      />
+      <path
+        d="M312.04 162.4C431.52 124.12 437.32 292.32 327.12 308.56L319 276.08C383.96 267.96 390.92 187.92 320.16 197.2L312.04 162.4Z"
+        fill="#FFF7DF"
+        strokeWidth="19.72"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M114.84 153.12H334.08L313.2 365.4C249.013 394.787 189.467 394.787 134.56 365.4L114.84 153.12Z"
+        fill="#FFF7DF"
+        strokeWidth="19.72"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M99.7601 140.36C180.187 117.933 262.16 117.547 345.68 139.2L350.32 175.16C265.253 193.72 180.187 193.72 95.1201 175.16L99.7601 140.36Z"
+        fill="#FFF7DF"
+        strokeWidth="19.72"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M129.92 128.76L146.16 91.6401C197.2 78.4934 249.787 78.8801 303.92 92.8001L322.48 129.92L129.92 128.76Z"
+        fill="#FFF7DF"
+        strokeWidth="19.72"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M175.16 68.44C156.6 52.2 156.987 37.12 176.32 23.2L193.72 30.16C179.027 40.9866 179.8 52.2 196.04 63.8L175.16 68.44Z"
+        fill="#FFF7DF"
+        strokeWidth="19.72"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M256.36 67.2799C238.573 52.5866 238.96 37.1199 257.52 20.8799L276.08 28.9999C262.933 40.5999 263.32 51.8132 277.24 62.6399L256.36 67.2799Z"
+        fill="#FFF7DF"
+        strokeWidth="19.72"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M148.722 253.234C173.444 238.803 194.163 243.207 210.878 266.446C186.156 280.877 165.437 276.473 148.722 253.234Z"
+        fill="#FFF7DF"
+        strokeWidth="16.3676"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M177.939 273.225C184.181 274.552 190.495 269.724 192.043 262.443C193.591 255.161 189.786 248.182 183.544 246.856C177.303 245.529 170.988 250.357 169.441 257.638C167.893 264.92 171.698 271.898 177.939 273.225Z"
+        fill="#FFF7DF"
+        strokeWidth="16.3676"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M238.042 257.166C254.757 233.927 275.476 229.523 300.198 243.954C283.483 267.193 262.764 271.597 238.042 257.166Z"
+        fill="#FFF7DF"
+        strokeWidth="16.3676"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M272.864 263.545C279.106 262.218 282.911 255.239 281.363 247.958C279.815 240.676 273.501 235.849 267.259 237.175C261.018 238.502 257.213 245.48 258.761 252.762C260.309 260.044 266.623 264.871 272.864 263.545Z"
+        fill="#FFF7DF"
+        strokeWidth="16.3676"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M187.92 309.72C212.667 327.507 239.347 324.413 267.96 300.44C257.133 336.013 230.453 339.107 187.92 309.72Z"
+        fill="#FFF7DF"
+        strokeWidth="19.72"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="#FFF7DF"
+      />
+      <path
+        d="M312.04 162.4C431.52 124.12 437.32 292.32 327.12 308.56L319 276.08C383.96 267.96 390.92 187.92 320.16 197.2L312.04 162.4Z"
+        fill="#533BFF"
+      />
+      <path
+        d="M114.84 153.12H334.08L313.2 365.4C249.013 394.787 189.467 394.787 134.56 365.4L114.84 153.12Z"
+        fill="#FF3028"
+      />
+      <path
+        d="M99.7601 140.36C180.187 117.933 262.16 117.547 345.68 139.2L350.32 175.16C265.253 193.72 180.187 193.72 95.1201 175.16L99.7601 140.36Z"
+        fill="#090909"
+      />
+      <path
+        d="M129.92 128.76L146.16 91.6401C197.2 78.4934 249.787 78.8801 303.92 92.8001L322.48 129.92L129.92 128.76Z"
+        fill="#FF829C"
+      />
+      <path
+        d="M175.16 68.44C156.6 52.2 156.987 37.12 176.32 23.2L193.72 30.16C179.027 40.9866 179.8 52.2 196.04 63.8L175.16 68.44Z"
+        fill="#533BFF"
+      />
+      <path
+        d="M256.36 67.2799C238.573 52.5866 238.96 37.1199 257.52 20.8799L276.08 28.9999C262.933 40.5999 263.32 51.8132 277.24 62.6399L256.36 67.2799Z"
+        fill="#533BFF"
+      />
+      <path
+        d="M148.722 253.234C173.444 238.803 194.163 243.207 210.878 266.446C186.156 280.877 165.437 276.473 148.722 253.234Z"
+        fill="white"
+      />
+      <path
+        d="M177.939 273.225C184.181 274.552 190.495 269.724 192.043 262.443C193.591 255.161 189.786 248.182 183.544 246.856C177.303 245.529 170.988 250.357 169.441 257.638C167.893 264.92 171.698 271.898 177.939 273.225Z"
+        fill="#090909"
+      />
+      <path
+        d="M238.042 257.166C254.757 233.927 275.476 229.523 300.198 243.954C283.483 267.193 262.764 271.597 238.042 257.166Z"
+        fill="white"
+      />
+      <path
+        d="M272.864 263.545C279.106 262.218 282.911 255.239 281.363 247.958C279.815 240.676 273.501 235.849 267.259 237.175C261.018 238.502 257.213 245.48 258.761 252.762C260.309 260.044 266.623 264.871 272.864 263.545Z"
+        fill="#090909"
+      />
+      <path
+        d="M187.92 309.72C212.667 327.507 239.347 324.413 267.96 300.44C257.133 336.013 230.453 339.107 187.92 309.72Z"
+        fill="white"
+      />
+    </svg>
+  );
+};
+
+export default CoffeeSticker;
+

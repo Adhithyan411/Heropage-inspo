@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "shaders": {
+    "4745648": {
+      "title": "hello world",
+      "component": "HelloWorld",
+      "file": "components/shaders/HelloWorld.tsx",
+      "framework": "react",
+      "hash": "sha256:8a742f27e15de932dbe0940b38e8b09abad70de2f26ab11e7d50259482640337",
+      "updatedAt": "2026-11-01T14:22:40.945811+00:00",
+      "installedAt": "2026-11-01T14:24:17.501Z"
+    }
+  }
+}
