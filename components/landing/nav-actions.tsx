@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 interface VisitorStats {
-  uniqueVisitors: number;
   totalVisits: number;
 }
 
@@ -58,17 +57,13 @@ function recordVisitOnce(site: string): Promise<VisitorStats> {
     }
 
     const data = await res.json();
-    const uniqueVisitors = Number(data.unique_visitors ?? 0);
-    const totalVisits = Number(data.total_visits ?? uniqueVisitors);
+    const totalVisits = Number(data.total_visits);
 
-    if (!Number.isFinite(uniqueVisitors) || uniqueVisitors < 0) {
-      throw new Error("Visitor API returned invalid visitor count");
+    if (!Number.isFinite(totalVisits) || totalVisits < 0) {
+      throw new Error("Visitor API returned invalid total visit count");
     }
 
-    return {
-      uniqueVisitors,
-      totalVisits: Number.isFinite(totalVisits) ? totalVisits : uniqueVisitors,
-    };
+    return { totalVisits };
   })().catch((err) => {
     // Allow retries if this attempt failed (e.g., transient network error)
     recordedVisitsInPageLoad.delete(site);
@@ -79,10 +74,9 @@ function recordVisitOnce(site: string): Promise<VisitorStats> {
   return requestPromise;
 }
 
-// visitor counter connected to Neon PostgreSQL
+// Total page visits counter connected to Neon PostgreSQL
 export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
   const [count, setCount] = useState<number>(0);
-  const [totalVisits, setTotalVisits] = useState<number | null>(null);
 
   useEffect(() => {
     let unmounted = false;
@@ -91,13 +85,12 @@ export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
     async function recordAndFetch() {
       try {
         const stats = await recordVisitOnce(site);
-        const target = stats.uniqueVisitors;
+        const target = stats.totalVisits;
 
         if (unmounted) return;
-        setTotalVisits(stats.totalVisits);
 
         try {
-          window.localStorage.setItem(`siu_visitors_${site}`, String(target));
+          window.localStorage.setItem(`siu_total_visits_${site}`, String(target));
         } catch {}
 
         // Smooth roll-up animation starting dynamically from 0
@@ -121,7 +114,7 @@ export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
         console.warn("Could not connect to live visitor DB, using last cached count", err);
         if (!unmounted) {
           try {
-            const cached = Number(window.localStorage.getItem(`siu_visitors_${site}`));
+            const cached = Number(window.localStorage.getItem(`siu_total_visits_${site}`));
             if (Number.isFinite(cached) && cached > 0) {
               setCount(cached);
               return;
@@ -142,11 +135,7 @@ export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
 
   return (
     <div
-      title={
-        totalVisits !== null
-          ? `Live verified unique visitors (Neon PostgreSQL) — ${totalVisits.toLocaleString()} total visits`
-          : "Live verified unique visitors (Neon PostgreSQL)"
-      }
+      title="Total page visits (Neon PostgreSQL)"
       className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200/90 bg-white/85 px-2 sm:px-2.5 py-1.5 sm:py-2 text-xs font-medium text-zinc-700 shadow-xs backdrop-blur-xs transition-all hover:border-zinc-300 select-none"
     >
       <span className="relative flex h-2 w-2">
@@ -155,7 +144,7 @@ export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
       <span className="font-mono font-semibold text-zinc-900">
         {count.toLocaleString()}
       </span>
-      <span className="hidden text-[11px] text-zinc-500 sm:inline">visitors</span>
+      <span className="hidden text-[11px] text-zinc-500 sm:inline">visits</span>
     </div>
   );
 }
