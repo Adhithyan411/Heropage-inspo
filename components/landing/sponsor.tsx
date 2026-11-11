@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
 
 /* ------------------------------------------------------------------
    tokens & constants
@@ -12,28 +11,6 @@ const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const GITHUB_URL = "https://github.com/sponsors/Adhithyan411";
 const COFFEE_URL = "https://github.com/sponsors/Adhithyan411";
 const TWITTER_URL = "https://github.com/Adhithyan411";
-
-interface Sponsor {
-  name: string;
-  url: string;
-  logo: string;
-  sublabel?: string;
-  bg?: string;
-  border?: string;
-}
-
-const SPONSORS: Sponsor[] = [
-  {
-    name: "PureCanvas",
-    url: "https://www.purecanvas.app/",
-    logo: "https://www.purecanvas.app/favicon.svg",
-    sublabel: "purecanvas.app",
-    bg: "#ffffff",
-    border: "#e4e4e7",
-  },
-];
-
-const TOTAL_SPONSOR_SLOTS = 5;
 
 function useInView({
   threshold = 0.08,
@@ -106,89 +83,6 @@ function MotionBlur({
 }
 
 /* ------------------------------------------------------------------
-   draggable sticker on the section sides
-------------------------------------------------------------------- */
-function DraggableSticker({
-  src,
-  size,
-  left,
-  right,
-  top,
-  bottom,
-  rot = 0,
-  inView,
-  delay = 0,
-}: {
-  src: string;
-  size: number;
-  left?: string;
-  right?: string;
-  top?: string;
-  bottom?: string;
-  rot?: number;
-  inView: boolean;
-  delay?: number;
-}) {
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [hover, setHover] = useState(false);
-  const [drag, setDrag] = useState(false);
-  const start = useRef({ px: 0, py: 0, x: 0, y: 0 });
-
-  return (
-    <div
-      className="pointer-events-auto absolute hidden xl:block select-none"
-      style={{
-        left,
-        right,
-        top,
-        bottom,
-        width: size,
-        zIndex: drag ? 40 : 20,
-        opacity: inView ? 1 : 0,
-        transform: inView ? "scale(1)" : "scale(0)",
-        transition: `transform 650ms ${SPRING} ${delay}ms, opacity 400ms ease-out ${delay}ms`,
-      }}
-    >
-      <div
-        data-sticker
-        onPointerDown={(e) => {
-          e.currentTarget.setPointerCapture(e.pointerId);
-          start.current = { px: e.clientX, py: e.clientY, x: pos.x, y: pos.y };
-          setDrag(true);
-        }}
-        onPointerMove={(e) => {
-          if (!drag) return;
-          setPos({
-            x: start.current.x + e.clientX - start.current.px,
-            y: start.current.y + e.clientY - start.current.py,
-          });
-        }}
-        onPointerUp={() => setDrag(false)}
-        onPointerCancel={() => setDrag(false)}
-        onPointerEnter={() => setHover(true)}
-        onPointerLeave={() => setHover(false)}
-        className="touch-none select-none cursor-grab active:cursor-grabbing"
-        style={{
-          translate: `${pos.x}px ${pos.y}px`,
-          rotate: `${rot + (drag ? -5 : hover ? 10 : 0)}deg`,
-          scale: drag ? 1.16 : hover ? 1.08 : 1,
-          filter: drag
-            ? "drop-shadow(0 16px 14px rgba(0,0,0,0.22))"
-            : hover
-            ? "drop-shadow(0 10px 10px rgba(0,0,0,0.12))"
-            : "drop-shadow(0 4px 6px rgba(0,0,0,0.06))",
-          transition: drag
-            ? "scale 150ms ease-out"
-            : `scale 400ms ${SPRING}, rotate 400ms ${SPRING}, filter 250ms ease`,
-        }}
-      >
-        <img src={src} alt="" draggable={false} className="block h-auto w-full select-none" />
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------
    tooltip pill that pops above a tile on hover / keyboard focus
 ------------------------------------------------------------------- */
 function Tip({ label, sublabel }: { label: string; sublabel?: string }) {
@@ -217,178 +111,7 @@ function Tip({ label, sublabel }: { label: string; sublabel?: string }) {
 }
 
 /* ------------------------------------------------------------------
-   first box: website logo with matching light lime background
-------------------------------------------------------------------- */
-function FaviconTile({
-  inView,
-  index,
-}: {
-  inView: boolean;
-  index: number;
-}) {
-  const [hover, setHover] = useState(false);
-
-  return (
-    <li
-      className="relative list-none"
-      style={{
-        opacity: 0,
-        animation: inView ? `sponsorPop 600ms ${SPRING} ${420 + index * 60}ms both` : "none",
-      }}
-    >
-      <Link
-        href="/"
-        aria-label="Stick it up website"
-        onPointerEnter={() => setHover(true)}
-        onPointerLeave={() => setHover(false)}
-        className="group relative block h-[76px] w-[76px] cursor-pointer outline-none sm:h-24 sm:w-24 "
-      >
-        {/* Inner visual box: ONLY this translates on group-hover to prevent edge flickering */}
-        <div
-          className="relative flex h-full w-full items-center justify-center rounded-[24px] group-hover:-translate-y-1.5 active:scale-95"
-          style={{
-            background: "#ecfccb", // light lime matching logo (#B5EE0A / #CEFF65)
-            
-            boxShadow: "inset 0 1px 0 #fff, 0 2px 8px rgba(181,238,10,0.22), 0 1px 2px rgba(0,0,0,0.04)",
-            transition: `transform 350ms ${SPRING}, box-shadow 250ms ease, border-color 150ms`,
-          }}
-        >
-          <img
-            src="/stickers/logo.svg"
-            alt="Stick it up logo"
-            draggable={false}
-            className="h-full w-full select-none rounded-[24px] transition-[rotate,scale] duration-300 group-hover:scale-105 border border-[#d9f99d]"
-            style={{
-              rotate: hover ? "-8deg" : "0deg",
-              transitionTimingFunction: SPRING,
-            }}
-          />
-        </div>
-
-        <Tip label="Stick it up" sublabel="Official website" />
-      </Link>
-    </li>
-  );
-}
-
-/* ------------------------------------------------------------------
-   sponsor box: active sponsor showcase
-------------------------------------------------------------------- */
-function SponsorTile({
-  sponsor,
-  index,
-  inView,
-}: {
-  sponsor: Sponsor;
-  index: number;
-  inView: boolean;
-}) {
-  const [hover, setHover] = useState(false);
-
-  return (
-    <li
-      className="relative list-none"
-      style={{
-        opacity: 0,
-        animation: inView ? `sponsorPop 600ms ${SPRING} ${420 + index * 60}ms both` : "none",
-      }}
-    >
-      <a
-        href={sponsor.url}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={`${sponsor.name} — Sponsor`}
-        onPointerEnter={() => setHover(true)}
-        onPointerLeave={() => setHover(false)}
-        className="group relative block h-[76px] w-[76px] cursor-pointer outline-none sm:h-24 sm:w-24 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 rounded-[24px]"
-      >
-        {/* Inner visual box: ONLY this translates on group-hover to prevent edge flickering */}
-        <div
-          className="relative flex h-full w-full items-center justify-center rounded-[24px] group-hover:-translate-y-1.5 active:scale-95"
-          style={{
-            background: sponsor.bg ?? "#ffffff",
-            
-            boxShadow:
-              "inset 0 1px 0 #fff, 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px -2px rgba(0,0,0,0.04)",
-            transition: `transform 350ms ${SPRING}, box-shadow 250ms ease, border-color 150ms`,
-          }}
-        >
-          <img
-            src={sponsor.logo}
-            alt={sponsor.name}
-            draggable={false}
-            className="h-full w-full object-contain select-none transition-[rotate,scale] duration-300 group-hover:scale-110"
-            style={{
-              rotate: hover ? "-6deg" : "0deg",
-              transitionTimingFunction: SPRING,
-            }}
-          />
-        </div>
-
-        <Tip label={sponsor.name} sublabel={sponsor.sublabel ?? "Sponsor"} />
-      </a>
-    </li>
-  );
-}
-
-/* ------------------------------------------------------------------
-   empty grey boxes with plus: available sponsor slots
-------------------------------------------------------------------- */
-function EmptySlotTile({
-  index,
-  inView,
-  href = GITHUB_URL,
-}: {
-  index: number;
-  inView: boolean;
-  href?: string;
-}) {
-  return (
-    <li
-      className="relative list-none"
-      style={{
-        opacity: 0,
-        animation: inView ? `sponsorPop 600ms ${SPRING} ${420 + index * 60}ms both` : "none",
-      }}
-    >
-      <a
-        href={href}
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Empty sponsor slot — Click to sponsor"
-        className="group relative block h-[76px] w-[76px] cursor-pointer outline-none sm:h-24 sm:w-24 focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 rounded-[24px]"
-      >
-        {/* Inner visual box: ONLY this translates on group-hover to prevent edge flickering */}
-        <div
-          className="relative flex h-full w-full items-center justify-center rounded-[24px] group-hover:-translate-y-1.5 active:scale-95"
-          style={{
-            background: "#f4f4f5", // empty grey div box
-            border: "1px solid #e4e4e7",
-            boxShadow: "inset 0 1px 0 #fff, 0 1px 2px rgba(0,0,0,0.04)",
-            transition: `transform 350ms ${SPRING}, box-shadow 250ms ease, border-color 150ms`,
-          }}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            className="h-7 w-7 sm:h-8 sm:w-8 text-zinc-400 transition-[transform,color] duration-300 group-hover:rotate-90 group-hover:text-zinc-800"
-            style={{ transitionTimingFunction: SPRING }}
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </div>
-
-        <Tip label="Your company/name logo here" />
-      </a>
-    </li>
-  );
-}
-
-/* ------------------------------------------------------------------
-   under box 1: github (light grey background + github icon)
+   tile 1: github (light grey background + github icon)
 ------------------------------------------------------------------- */
 function GitHubTile({
   index,
@@ -646,48 +369,12 @@ export default function Sponsor() {
           </p>
         </MotionBlur>
 
-        {/* "Slots are empty" text note */}
-        <MotionBlur inView={inView} delay={160}>
-          <div className="mt-7 sm:mt-8 flex items-center gap-2 text-sm sm:text-base font-normal text-zinc-500">
-           
-            <span>Slots are empty, click any slot to add your logo</span>
-          </div>
-        </MotionBlur>
-
-        {/* Sponsor boxes */}
-        <div className="mt-6 sm:mt-7">
-          {/* Row 1: 1st box is website logo, followed by active sponsors and empty grey boxes with plus */}
+        {/* Support boxes: GitHub, Buy Me a Coffee, and X */}
+        <div className="mt-7 sm:mt-8">
           <ul className="flex flex-wrap items-center gap-4 sm:gap-5 p-0 m-0">
-            {/* 1st box: website logo with matching light lime background */}
-            <FaviconTile inView={inView} index={0} />
-
-            {/* Active sponsors */}
-            {SPONSORS.map((sponsor, i) => (
-              <SponsorTile
-                key={sponsor.name}
-                sponsor={sponsor}
-                index={1 + i}
-                inView={inView}
-              />
-            ))}
-
-            {/* Empty grey boxes with plus */}
-            {Array.from({
-              length: Math.max(0, TOTAL_SPONSOR_SLOTS - SPONSORS.length),
-            }).map((_, i) => (
-              <EmptySlotTile
-                key={i}
-                index={1 + SPONSORS.length + i}
-                inView={inView}
-              />
-            ))}
-          </ul>
-
-          {/* Row 2 ("under boxes"): GitHub (light grey), Buy Me a Coffee (light yellow), and X / Twitter (light sky) */}
-          <ul className="mt-4 sm:mt-5 flex items-center gap-4 sm:gap-5 p-0 m-0">
-            <GitHubTile index={TOTAL_SPONSOR_SLOTS + 1} inView={inView} />
-            <CoffeeTile index={TOTAL_SPONSOR_SLOTS + 2} inView={inView} />
-            <TwitterTile index={TOTAL_SPONSOR_SLOTS + 3} inView={inView} />
+            <GitHubTile index={0} inView={inView} />
+            <CoffeeTile index={1} inView={inView} />
+            <TwitterTile index={2} inView={inView} />
           </ul>
         </div>
 
