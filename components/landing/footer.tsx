@@ -243,12 +243,121 @@ function DraggableSticker({
   );
 }
 
+const WORDMARK_CHARS = Array.from("Stick it up");
+
+function clampVal(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v));
+}
+
+function smoothstepVal(edge0: number, edge1: number, x: number): number {
+  const t = clampVal((x - edge0) / (edge1 - edge0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
 /* ------------------------------------------------------------------
    footer
 ------------------------------------------------------------------- */
 export default function Footer() {
-  const [ref, inView] = useInView();
+  const [footerRef, inView] = useInView({
+    threshold: 0.04,
+    rootMargin: "0px 0px -30px 0px",
+  });
+  const topGridRef = useRef<HTMLDivElement>(null);
+  const horizonGlowRef = useRef<HTMLDivElement>(null);
+  const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const [modalTab, setModalTab] = useState<LegalModalTab | null>(null);
+
+  // Scroll-linked upward footer entrance + center-out bottom sunrise wordmark reveal
+  useEffect(() => {
+    const footerEl = footerRef.current;
+    if (!footerEl) return;
+
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let rafId = 0;
+
+    function applyRevealFrame() {
+      rafId = 0;
+      if (!footerEl) return;
+
+      if (motionQuery.matches) {
+        if (topGridRef.current) {
+          topGridRef.current.style.transform = "translate3d(0, 0px, 0)";
+        }
+        if (horizonGlowRef.current) {
+          horizonGlowRef.current.style.opacity = "1";
+          horizonGlowRef.current.style.transform = "translate3d(0, 0%, 0) scale(1, 1)";
+        }
+        for (let i = 0; i < WORDMARK_CHARS.length; i++) {
+          const ch = charRefs.current[i];
+          if (ch) ch.style.transform = "translate3d(0, 0%, 0)";
+        }
+        return;
+      }
+
+      const rect = footerEl.getBoundingClientRect();
+      const vh = window.innerHeight || 900;
+
+      // Upper footer content smoothly glides upward as the footer enters from below
+      const entryProgress = clampVal(
+        (vh - rect.top) / Math.max(120, Math.min(vh * 0.5, rect.height * 0.72)),
+        0,
+        1,
+      );
+      if (topGridRef.current) {
+        const yLift = (1 - easeOutCubic(entryProgress)) * 45;
+        topGridRef.current.style.transform = `translate3d(0, ${yLift.toFixed(2)}px, 0)`;
+      }
+
+      // Bottom horizon + wordmark upward sunrise progresses to 1.0 as visitor reaches end of footer
+      const distToBottom = Math.max(0, rect.bottom - vh);
+      const revealSpan = clampVal(rect.height * 0.65, 220, Math.min(250, vh * 0.5));
+      const rawP = clampVal(1 - distToBottom / revealSpan, 0, 1);
+
+      if (horizonGlowRef.current) {
+        const glowP = smoothstepVal(0, 0.72, rawP);
+        const opacity = 0.35 + 0.65 * glowP;
+        const translateY = (1 - glowP) * 18;
+        const scaleX = 0.74 + 0.26 * glowP;
+        const scaleY = 0.44 + 0.56 * glowP;
+        horizonGlowRef.current.style.opacity = opacity.toFixed(4);
+        horizonGlowRef.current.style.transform = `translate3d(0, ${translateY.toFixed(2)}%, 0) scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)})`;
+      }
+
+      const mid = (WORDMARK_CHARS.length - 1) / 2;
+      for (let i = 0; i < WORDMARK_CHARS.length; i++) {
+        const ch = charRefs.current[i];
+        if (!ch) continue;
+        const centerDist = Math.abs(i - mid) / mid;
+        const start = 0.28 + centerDist * 0.22;
+        const end = 0.78 + centerDist * 0.2;
+        const charP = easeOutCubic(clampVal((rawP - start) / (end - start), 0, 1));
+        const translatePct = (1 - charP) * 106;
+        ch.style.transform = `translate3d(0, ${translatePct.toFixed(2)}%, 0)`;
+      }
+    }
+
+    function scheduleReveal() {
+      if (!rafId) {
+        rafId = window.requestAnimationFrame(applyRevealFrame);
+      }
+    }
+
+    scheduleReveal();
+    window.addEventListener("scroll", scheduleReveal, { passive: true });
+    window.addEventListener("resize", scheduleReveal, { passive: true });
+    motionQuery.addEventListener("change", scheduleReveal);
+
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", scheduleReveal);
+      window.removeEventListener("resize", scheduleReveal);
+      motionQuery.removeEventListener("change", scheduleReveal);
+    };
+  }, [footerRef]);
 
   // Close modal on Escape key and prevent background scroll
   useEffect(() => {
@@ -268,7 +377,7 @@ export default function Footer() {
   return (
     <>
       <footer
-        ref={ref}
+        ref={footerRef}
         className="relative z-10 -mx-5 overflow-hidden px-6 pt-14 sm:px-12 sm:pt-16"
         style={{
           background:
@@ -282,7 +391,10 @@ export default function Footer() {
         />
 
         {/* top: tagline + links */}
-        <div className="relative z-10 mx-auto grid max-w-5xl gap-12 lg:grid-cols-[1fr_1.85fr] lg:gap-14">
+        <div
+          ref={topGridRef}
+          className="relative z-10 mx-auto grid max-w-5xl gap-12 will-change-transform motion-reduce:!transform-none lg:grid-cols-[1fr_1.85fr] lg:gap-14"
+        >
           <MotionBlur inView={inView} delay={0} className="text-center lg:text-left">
             <p className="font-sans text-3xl font-normal leading-[1.1] tracking-tight text-zinc-900 sm:text-4xl">
               Stick it on.
@@ -392,13 +504,21 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* full-bleed wordmark + live stickers */}
-        <MotionBlur
-          inView={inView}
-          delay={380}
-          className="relative z-10 -mx-6 mt-14 sm:-mx-12 sm:mt-20"
-        >
+        {/* full-bleed wordmark + scroll-linked upward sunrise reveal + live stickers */}
+        <div className="relative z-10 -mx-6 mt-14 sm:-mx-12 sm:mt-20">
           <div className="relative select-none" style={{ containerType: "inline-size" }}>
+            <div
+              ref={horizonGlowRef}
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-[110%] -left-[25%] -right-[25%] -z-10 h-[220%] origin-bottom will-change-transform motion-reduce:!transform-none motion-reduce:!opacity-100"
+              style={{
+                background:
+                  "radial-gradient(closest-side, rgba(255,255,255,0.58) 0%, rgba(186,230,253,0.44) 24%, rgba(56,189,248,0.24) 55%, rgba(56,189,248,0) 100%)",
+                opacity: 0.35,
+                transform: "translate3d(0, 18%, 0) scale(0.74, 0.44)",
+              }}
+            />
+
             <div
               aria-hidden
               className="overflow-hidden whitespace-nowrap text-center font-bold leading-[0.8] tracking-[-0.055em] text-white"
@@ -409,17 +529,30 @@ export default function Footer() {
                 textShadow: "0 0.02em 0 rgba(20,90,190,0.25)",
               }}
             >
-              Stick it up
+              {WORDMARK_CHARS.map((ch, idx) => (
+                <span
+                  key={`${idx}-${ch === " " ? "sp" : ch}`}
+                  ref={(el) => {
+                    charRefs.current[idx] = el;
+                  }}
+                  className="inline-block will-change-transform motion-reduce:!transform-none"
+                  style={{
+                    transform: "translate3d(0, 106%, 0)",
+                  }}
+                >
+                  {ch === " " ? "\u00A0" : ch}
+                </span>
+              ))}
             </div>
             <span className="sr-only">Stick it up</span>
 
-            <DraggableSticker inView={inView} delay={640} src="/stickers/star.svg" size={84} left="4%" top="-6%" rot={-12} />
-            <DraggableSticker inView={inView} delay={720} src="/stickers/blueberry.svg" size={92} left="28%" top="52%" rot={8} />
-            <DraggableSticker inView={inView} delay={800} src="/stickers/Flame.svg" size={65} left="46%" top="-10%" rot={-6} />
-            <DraggableSticker inView={inView} delay={880} src="/stickers/flower.svg" size={70} left="66%" top="32%" rot={14} />
-            <DraggableSticker inView={inView} delay={960} src="/stickers/cat.svg" size={86} left="84%" top="-4%" rot={-10} />
+            <DraggableSticker inView={inView} delay={220} src="/stickers/star.svg" size={84} left="4%" top="-6%" rot={-12} />
+            <DraggableSticker inView={inView} delay={300} src="/stickers/blueberry.svg" size={92} left="28%" top="52%" rot={8} />
+            <DraggableSticker inView={inView} delay={380} src="/stickers/Flame.svg" size={65} left="46%" top="-10%" rot={-6} />
+            <DraggableSticker inView={inView} delay={460} src="/stickers/flower.svg" size={70} left="66%" top="32%" rot={14} />
+            <DraggableSticker inView={inView} delay={540} src="/stickers/cat.svg" size={86} left="84%" top="-4%" rot={-10} />
           </div>
-        </MotionBlur>
+        </div>
       </footer>
 
       {/* ------------------------------------------------------------------
@@ -448,11 +581,10 @@ export default function Footer() {
                     key={tab.id}
                     type="button"
                     onClick={() => setModalTab(tab.id as LegalModalTab)}
-                    className={`cursor-pointer rounded-xl px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
-                      modalTab === tab.id
-                        ? "bg-zinc-900 text-white shadow-xs"
-                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
-                    }`}
+                    className={`cursor-pointer rounded-xl px-3 py-1.5 text-xs font-medium transition-all duration-150 ${modalTab === tab.id
+                      ? "bg-zinc-900 text-white shadow-xs"
+                      : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                      }`}
                   >
                     {tab.label}
                   </button>

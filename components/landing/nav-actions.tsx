@@ -2,29 +2,102 @@
 
 import { useEffect, useState } from "react";
 
+interface VisitorStats {
+  uniqueVisitors: number;
+  totalVisits: number;
+}
+
+const VISITOR_STORAGE_KEY = "sb_vid";
+const VISITOR_TOKEN_REGEX = /^[a-zA-Z0-9_-]{16,128}$/;
+const recordedVisitsInPageLoad = new Map<string, Promise<VisitorStats>>();
+
+function getOrCreateClientVisitorId(): string | null {
+  try {
+    const existing = window.localStorage.getItem(VISITOR_STORAGE_KEY);
+    if (existing && VISITOR_TOKEN_REGEX.test(existing)) {
+      return existing;
+    }
+
+    const generated =
+      typeof window.crypto?.randomUUID === "function"
+        ? window.crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 18)}`;
+
+    window.localStorage.setItem(VISITOR_STORAGE_KEY, generated);
+    return generated;
+  } catch {
+    return null;
+  }
+}
+
+function recordVisitOnce(site: string): Promise<VisitorStats> {
+  const existingPromise = recordedVisitsInPageLoad.get(site);
+  if (existingPromise) {
+    return existingPromise;
+  }
+
+  const requestPromise = (async () => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    const clientVisitorId = getOrCreateClientVisitorId();
+    if (clientVisitorId) {
+      headers["x-visitor-id"] = clientVisitorId;
+    }
+
+    const res = await fetch("/api/visitors", {
+      method: "POST",
+      cache: "no-store",
+      credentials: "same-origin",
+      headers,
+      body: JSON.stringify({ site }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Visitor API returned HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const uniqueVisitors = Number(data.unique_visitors ?? 0);
+    const totalVisits = Number(data.total_visits ?? uniqueVisitors);
+
+    if (!Number.isFinite(uniqueVisitors) || uniqueVisitors < 0) {
+      throw new Error("Visitor API returned invalid visitor count");
+    }
+
+    return {
+      uniqueVisitors,
+      totalVisits: Number.isFinite(totalVisits) ? totalVisits : uniqueVisitors,
+    };
+  })().catch((err) => {
+    // Allow retries if this attempt failed (e.g., transient network error)
+    recordedVisitsInPageLoad.delete(site);
+    throw err;
+  });
+
+  recordedVisitsInPageLoad.set(site, requestPromise);
+  return requestPromise;
+}
+
 // visitor counter connected to Neon PostgreSQL
 export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
   const [count, setCount] = useState<number>(0);
+  const [totalVisits, setTotalVisits] = useState<number | null>(null);
 
   useEffect(() => {
     let unmounted = false;
+    let frameId = 0;
 
     async function recordAndFetch() {
       try {
-        // Record visit and get authoritative server count
-        const res = await fetch("/api/visitors", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ site }),
-        });
-
-        if (!res.ok) throw new Error("Visitor API response not ok");
-        const data = await res.json();
-        const target = Number(data.unique_visitors ?? data.total_visits ?? 0);
+        const stats = await recordVisitOnce(site);
+        const target = stats.uniqueVisitors;
 
         if (unmounted) return;
+        setTotalVisits(stats.totalVisits);
+
         try {
-          localStorage.setItem(`siu_visitors_${site}`, String(target));
+          window.localStorage.setItem(`siu_visitors_${site}`, String(target));
         } catch {}
 
         // Smooth roll-up animation starting dynamically from 0
@@ -38,13 +111,22 @@ export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
           const ease = 1 - Math.pow(1 - progress, 3);
           const val = Math.round(startCount + (target - startCount) * ease);
           setCount(val);
-          if (progress < 1) requestAnimationFrame(tick);
+          if (progress < 1) {
+            frameId = requestAnimationFrame(tick);
+          }
         };
 
-        requestAnimationFrame(tick);
+        frameId = requestAnimationFrame(tick);
       } catch (err) {
-        console.warn("Could not connect to live visitor DB, using local fallback", err);
+        console.warn("Could not connect to live visitor DB, using last cached count", err);
         if (!unmounted) {
+          try {
+            const cached = Number(window.localStorage.getItem(`siu_visitors_${site}`));
+            if (Number.isFinite(cached) && cached > 0) {
+              setCount(cached);
+              return;
+            }
+          } catch {}
           setCount((prev) => prev ?? 0);
         }
       }
@@ -54,12 +136,17 @@ export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
 
     return () => {
       unmounted = true;
+      if (frameId) cancelAnimationFrame(frameId);
     };
   }, [site]);
 
   return (
     <div
-      title="Live verified unique visitors (Neon PostgreSQL)"
+      title={
+        totalVisits !== null
+          ? `Live verified unique visitors (Neon PostgreSQL) — ${totalVisits.toLocaleString()} total visits`
+          : "Live verified unique visitors (Neon PostgreSQL)"
+      }
       className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200/90 bg-white/85 px-2 sm:px-2.5 py-1.5 sm:py-2 text-xs font-medium text-zinc-700 shadow-xs backdrop-blur-xs transition-all hover:border-zinc-300 select-none"
     >
       <span className="relative flex h-2 w-2">

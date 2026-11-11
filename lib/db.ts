@@ -15,9 +15,19 @@ export function getDb() {
 
 let schemaReady: Promise<void> | null = null;
 
+export function isUndefinedTableError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const record = err as { code?: unknown; cause?: unknown };
+  if (record.code === "42P01") return true;
+  if (record.cause && typeof record.cause === "object") {
+    return (record.cause as { code?: unknown }).code === "42P01";
+  }
+  return false;
+}
+
 /**
  * Ensures the visitor tracking tables exist in a fresh Neon database.
- * Runs once per serverless instance and resets on error so transient failures can retry.
+ * Uses IF NOT EXISTS only and never drops, truncates, or overwrites existing rows.
  */
 export function ensureVisitorTables(sql: ReturnType<typeof getDb>): Promise<void> {
   if (!schemaReady) {

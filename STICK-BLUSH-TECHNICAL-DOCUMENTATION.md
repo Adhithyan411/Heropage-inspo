@@ -154,6 +154,7 @@ Verified from [`package.json`](file:///Users/adhithyan/Documents/anti-gravity%20
 │       └── page.tsx                   # Sticker catalog (64 entries), search/filter, docs, inspector modal
 ├── components/landing/
 │   ├── nav-actions.tsx                # Shared VisitorCounter, NpmDownloadsBadge, GitHubStarButton
+│   ├── hero-video-background.tsx      # Full-bleed looping koi pond hero video backdrop + poster + fade
 │   ├── folder.tsx                     # Section 3: Skeuomorphic folder cards with hover/tap card fan-out
 │   ├── bento.tsx                      # Section 4: 4-card interactive Bento grid (Phone, Laptop, Keys, UiStack)
 │   ├── sponsor.tsx                    # Section 5: Sponsors heading, spin cat, GitHub/Coffee/X tiles + Tooltips
@@ -170,6 +171,9 @@ Verified from [`package.json`](file:///Users/adhithyan/Documents/anti-gravity%20
 └── public/
     ├── og-image.png / og-image.webp   # Social preview banners
     ├── landing/stick-it-up-footer.png # Footer image asset
+    ├── videos/
+    │   ├── homepage-koi-pond.mp4      # Optimized 1080p 30fps looping hero background video (6.8 MB)
+    │   └── homepage-koi-pond-poster.jpg # Immediate & reduced-motion poster fallback frame (244 KB)
     └── stickers/*.svg                 # 63 raw SVG files (62 sticker SVGs + logo.svg)
 ```
 
@@ -179,24 +183,25 @@ Verified from [`package.json`](file:///Users/adhithyan/Documents/anti-gravity%20
 
 The landing route ([`/` -> `app/page.tsx`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx)) renders inside `<main className="relative min-h-screen w-full overflow-x-clip bg-white">` with inline `<style>` keyframes at the top of `<main>`. Sections render in the following strict vertical order:
 
-### 1. Fixed Smart Navigation Bar (`app/page.tsx:394-456`)
+### 1. Fixed Smart Navigation Bar (`app/page.tsx:397-471`)
 - **Layout:** `fixed top-0 left-0 right-0 z-50 w-full px-4 py-2`, inner `<nav>` (`mx-auto flex h-14 max-w-6xl items-center justify-between rounded-2xl`).
 - **Background & Visual Effects:** At top (`isAtTop`: `window.scrollY <= 20`), `bg-transparent border-b border-transparent shadow-none`. Scrolled: `backdrop-blur-md bg-white/85 border-b border-zinc-200/70 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.02)]`.
-- **Typography & Colors:** Brand title `text-lg font-semibold tracking-tight text-zinc-900`; desktop nav links `text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900`.
-- **Assets:** [`/stickers/logo.svg`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/public/stickers/logo.svg) (`h-9 w-9 rounded-lg`).
+- **Typography & Colors:** Adaptive by `isAtTop` — over the koi pond backdrop (`isAtTop === true`), brand text uses `text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]` and nav links use `text-white/90 hover:bg-white/15 hover:text-white`; once scrolled (`!isAtTop`), transitions smoothly back to `text-zinc-900` and `text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900`.
+- **Assets:** [`/stickers/logo.svg`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/public/stickers/logo.svg) (`h-9 w-9 rounded-lg`, with subtle `ring-1 ring-white/25 shadow-xs` when `isAtTop`).
 - **Responsive Behavior:** Center `<ul>` links (`Stickers`, `Docs`, `npm`) use `hidden md:flex`. Right action group (`VisitorCounter`, `GitHubStarButton`) compacts padding/fonts below `sm` and hides `"visitors"` label on narrow mobile screens (`hidden sm:inline`).
 - **Interactions & Animations:** Mounts with `headerRise` (`700ms`, then cleared at `750ms` via `headerMounted`). Scroll hysteresis hides (`translate3d(0, -100%, 0)`) or reveals (`translate3d(0, 0, 0)`) the bar in `260ms`. Logo rotates `-6deg` and scales `1.10` on hover.
 
-### 2. Full-Width Interactive Hero Canvas (`app/page.tsx:459-678`)
-- **Layout Structure:** Full-width interactive wrapper `div` (`ref={heroRef}`, `relative w-full overflow-hidden`) housing three stacked visual planes:
-  1. **Floating Stickers Plane (`z-20`, `inset-0 h-200`, `pointer-events-none`)**: 6 `DraggableSticker` instances positioned via percentage offsets (`blueberry.svg`, `face.svg`, `star.svg`, `flower.svg`, `cat.svg`, `Sparkles.svg`). Mobile shows top-left `blueberry.svg` and top-right `flower.svg`; the other 4 use `hidden sm:block`.
-  2. **Click-to-Stick Pop Plane (`z-10`)**: Renders ephemeral 56px (`w-14`) random SVGs from `POP_SRCS` (12 assets) centered on click coordinates `(e.clientX - rect.left - 28, e.clientY - rect.top - 28)`, capped to the latest 8 (`[...p.slice(-7), pop]`) and removed after `2600ms`.
-  3. **Foreground Hero Content (`section`, `z-10 mx-auto max-w-4xl px-6 pb-24 pt-16 mt-15 text-center md:pt-24`)**:
-     - **Headline (`<h1>`)**: `text-4xl sm:text-6xl lg:text-7xl font-normal leading-[1.1] tracking-tight text-zinc-900`, tokenized into `15` items in `HERO` (`12` text words + `3` inline `<HeroSticker>` images: `Curious%20blue%20globe.svg`, `Flame.svg`, `Peace-hand.svg`).
-     - **Primary CTAs (`mt-14 flex flex-wrap justify-center gap-4`)**:
-       - Secondary tactile light button: `npm i stick-blush@latest` with clipboard copy morph (`Copy icon -> emerald check badge`).
-       - Primary dark glossy button: `Explore stickers` linking to `/stickers` with angled arrow hover nudge.
-     - **`TotalDownloadsCounter` (`mt-14`)**: `80px × 80px` (`h-20 w-20`) `Component-66.svg` badge linking to `https://www.npmjs.com/package/stick-blush` (`hover:scale-110 hover:-rotate-3 active:scale-95`).
+### 2. Full-Width Interactive Hero Canvas & Koi Pond Video (`app/page.tsx:474-695`, `hero-video-background.tsx`)
+- **Layout Structure:** Full-width interactive wrapper `div` (`ref={heroRef}`, `relative min-h-[600px] w-full overflow-hidden sm:min-h-[680px]`) housing four stacked visual planes:
+  1. **Video Backdrop Plane (`z-0`, `HeroVideoBackground`):** Static `homepage-koi-pond-poster.jpg` `<img>` + single muted inline looping `<video src="/videos/homepage-koi-pond.mp4" />`, both subtly softened with `blur-[2.5px] scale-[1.02]`, topped by emerald-dark contrast scrims (`bg-[#071f19]/30` + radial depth vignette + top navbar edge gradient) and a compact bottom linear white fade (`h-10 sm:h-12`) transitioning seamlessly into `Folder`.
+  2. **Click-to-Stick Pop Plane (`z-10`):** Renders ephemeral 56px (`w-14`) random SVGs from `POP_SRCS` (12 assets) centered on click coordinates `(e.clientX - rect.left - 28, e.clientY - rect.top - 28)`, capped to the latest 8 (`[...p.slice(-7), pop]`) and removed after `2600ms`.
+  3. **Foreground Hero Content (`section`, `z-20`, `mx-auto max-w-4xl px-6 pt-32 pb-28 text-center sm:pt-36 md:pt-40 md:pb-32`):**
+     - **Headline (`<h1>`):** `text-4xl sm:text-6xl lg:text-7xl font-normal leading-[1.1] tracking-tight text-white [text-shadow:0_2px_20px_rgba(4,24,19,0.5)]`, tokenized into `15` items in `HERO` (`12` text words + `3` inline `<HeroSticker>` images: `Curious%20blue%20globe.svg`, `Flame.svg`, `Peace-hand.svg`).
+     - **Primary CTAs (`mt-14 flex flex-wrap justify-center gap-4`):**
+       - Frosted light button: `npm i stick-blush@latest` (`backdrop-blur-md`, `border-white/75`) with clipboard copy morph (`Copy icon -> emerald check badge`).
+       - Primary dark button: `Explore stickers` linking to `/stickers` (`from-zinc-900/95 to-zinc-950`, `border-white/20 backdrop-blur-md`) with angled arrow hover nudge.
+     - **`TotalDownloadsCounter` (`mt-14`):** `80px × 80px` (`h-20 w-20`) `Component-66.svg` badge linking to `https://www.npmjs.com/package/stick-blush` (`hover:scale-110 hover:-rotate-3 active:scale-95`).
+  4. **Floating Stickers Plane (`z-30`, `inset-0`, `pointer-events-none`):** 6 `DraggableSticker` instances positioned via percentage offsets (`blueberry.svg`, `face.svg`, `star.svg`, `flower.svg`, `cat.svg`, `Sparkles.svg`). Mobile shows top-left `blueberry.svg` and top-right `flower.svg`; the other 4 use `hidden sm:block`.
 
 ### 3. Folder Showcase Section (`components/landing/folder.tsx`)
 - **Component & Path:** `FolderShowcase` in [`components/landing/folder.tsx`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/folder.tsx#L514-L663).
@@ -249,6 +254,210 @@ Shared motion tokens duplicated cleanly across landing modules:
 - `SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)"` (bouncy overshoot curve)
 - `EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)"` (crisp deceleration curve)
 - Expo-out variant used on nav/cards/inspector: `"cubic-bezier(0.16, 1, 0.3, 1)"`
+
+### Core Implementation Excerpts
+
+**1. Hero `@keyframes` & `prefers-reduced-motion` (`app/page.tsx:368-394`):**
+
+```css
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes headerRise {
+  from { opacity: 0; transform: translateY(-10px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: none; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(16px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: none; }
+}
+@keyframes pop {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes fadeOut {
+  to { opacity: 0; transform: scale(0.8); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+```
+
+**2. Hero 3-Layer Sticker Architecture & rAF Cursor Parallax (`app/page.tsx:95-135, 334-345`):**
+
+```tsx
+// Layer 1: responsive clamp + entrance pop + mouse parallax (--mx, --my)
+<div
+  className={`pointer-events-none absolute ${className}`}
+  style={{
+    width: `clamp(48px, ${size / 14.4}vw, ${size}px)`,
+    translate: `calc(var(--mx, 0) * ${depth}px) calc(var(--my, 0) * ${depth}px)`,
+    transition: "translate 400ms ease-out",
+    animation: `pop 650ms ${SPRING} ${400 + delay * 120}ms both`,
+  }}
+>
+  {/* Layer 2: idle float (paused while dragging OR off-screen via IntersectionObserver) */}
+  <div
+    data-float
+    style={{
+      animation: `float ${5 + delay}s ease-in-out ${delay * 0.6}s infinite`,
+      animationPlayState: drag ? "paused" : "running",
+    }}
+  >
+    {/* Layer 3: pointer drag, hover lift, tilt */}
+    <div
+      data-sticker
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      onPointerEnter={() => setHover(true)}
+      onPointerLeave={() => setHover(false)}
+      className="pointer-events-auto touch-none select-none"
+      style={{
+        translate: `${pos.x}px ${pos.y}px`,
+        rotate: `${rotate + (drag ? -5 : hover ? 8 : 0)}deg`,
+        scale: drag ? 1.14 : hover ? 1.06 : 1,
+        cursor: drag ? "grabbing" : "grab",
+        filter: drag
+          ? "drop-shadow(0 18px 18px rgba(0,0,0,0.32))"
+          : "drop-shadow(0 8px 16px rgba(0,0,0,0.22))",
+        transition: `scale 450ms ${SPRING}, rotate 450ms ${SPRING}`,
+      }}
+    >
+      <img src={src} alt="" draggable={false} className="block h-auto w-full" />
+    </div>
+  </div>
+</div>
+```
+
+```ts
+function onPointerMove(e: React.PointerEvent<HTMLElement>) {
+  if (rafParallax.current !== null) return;
+  const clientX = e.clientX;
+  const clientY = e.clientY;
+  rafParallax.current = requestAnimationFrame(() => {
+    rafParallax.current = null;
+    const el = stickersLayerRef.current;
+    if (!el) return;
+    el.style.setProperty("--mx", String((clientX / window.innerWidth - 0.5) * 2));
+    el.style.setProperty("--my", String((clientY / window.innerHeight - 0.5) * 2));
+  });
+}
+```
+
+**3. Self-Drawing SVG Checkmark & Grid-Overlap Text Morph (`app/page.tsx:594-663`):**
+
+```tsx
+<circle
+  cx="12"
+  cy="12"
+  r="11"
+  className="fill-emerald-500"
+  style={{
+    transformOrigin: "center",
+    transformBox: "fill-box",
+    transform: copied ? "scale(1)" : "scale(0.4)",
+    opacity: copied ? 1 : 0,
+    transition: "transform 350ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 150ms ease-out",
+  }}
+/>
+<path
+  d="m7 12.5 3.2 3.2L17 8.8"
+  pathLength={1}
+  stroke="white"
+  strokeWidth="2.6"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  style={{
+    strokeDasharray: 1,
+    strokeDashoffset: copied ? 0 : 1,
+    transition: copied ? "stroke-dashoffset 280ms ease-out 140ms" : "stroke-dashoffset 120ms ease-in",
+  }}
+/>
+```
+
+**4. `MotionBlur` Scroll Reveal With Post-Settle Layer Cleanup (`components/landing/folder.tsx:53-91`):**
+
+```tsx
+useEffect(() => {
+  if (inView) {
+    const t = setTimeout(() => setSettled(true), delay + 850);
+    return () => clearTimeout(t);
+  }
+}, [inView, delay]);
+
+return (
+  <div
+    className={className}
+    style={{
+      opacity: inView ? 1 : 0,
+      transform: inView ? "translate3d(0, 0, 0)" : "translate3d(0, 24px, 0)",
+      filter: settled ? "none" : inView ? "blur(0px)" : `blur(${blur}px)`,
+      transition: settled
+        ? "none"
+        : `opacity 650ms ${EASE_OUT} ${delay}ms, transform 750ms ${EASE_OUT} ${delay}ms, filter 650ms ${EASE_OUT} ${delay}ms`,
+      willChange: settled ? "auto" : "opacity, transform",
+    }}
+  >
+    {children}
+  </div>
+);
+```
+
+**5. `usePeel` 3D Vinyl Perspective Hover Hook (`packages/stickers-react/src/utils/usePeel.ts:22-44`):**
+
+```ts
+const baseTransform = userStyle?.transform ? `${userStyle.transform} ` : "";
+const transform = hovered
+  ? `${baseTransform}perspective(600px) rotateX(10deg) rotateY(-10deg) translateY(-8px) scale(1.08)`
+  : `${baseTransform}perspective(600px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)`;
+
+const baseFilter = userStyle?.filter ? `${userStyle.filter} ` : "";
+const filter = hovered
+  ? `${baseFilter}drop-shadow(0 20px 25px rgba(0, 0, 0, 0.35))`
+  : (userStyle?.filter || "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05))");
+```
+
+**6. Koi Pond Hero Video Backdrop (`components/landing/hero-video-background.tsx:72-112`):**
+
+```tsx
+<img
+  src={POSTER_SRC}
+  alt=""
+  decoding="async"
+  fetchPriority="high"
+  draggable={false}
+  className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center blur-[2.5px]"
+/>
+<video
+  ref={videoRef}
+  src={VIDEO_SRC}
+  poster={POSTER_SRC}
+  autoPlay
+  muted
+  loop
+  playsInline
+  preload="metadata"
+  controls={false}
+  disablePictureInPicture
+  disableRemotePlayback
+  onLoadedData={() => setVideoReady(true)}
+  onCanPlay={() => setVideoReady(true)}
+  onError={() => setVideoReady(false)}
+  className={`motion-reduce:hidden absolute inset-0 h-full w-full scale-[1.02] object-cover object-center blur-[2.5px] transition-opacity duration-500 ease-out ${
+    videoReady ? "opacity-100" : "opacity-0"
+  }`}
+/>
+<div className="absolute inset-0 bg-[#071f19]/30" />
+<div className="absolute inset-0 bg-[radial-gradient(ellipse_78%_62%_at_50%_46%,rgba(6,26,22,0.42)_0%,rgba(6,26,22,0.14)_68%,transparent_100%)]" />
+<div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/35 via-black/10 to-transparent" />
+<div className="absolute inset-x-0 bottom-0 h-10 sm:h-12 bg-[linear-gradient(to_bottom,rgba(255,255,255,0)_0%,rgba(255,255,255,0.28)_55%,rgba(255,255,255,0.78)_85%,#ffffff_100%)]" />
+```
 
 ---
 
@@ -628,38 +837,96 @@ sequenceDiagram
 | Inspector modal, controls & SVG export | Inspector dialog | `app/stickers/page.tsx` | Card click / Slider / Swatch / Switch | React state + `animate-in fade-in zoom-in-95` + `XMLSerializer` | Size (`48`–`180px`), 4 bg themes, switch thumb slide |
 | Docs guide live preview & toggles | `#docs` interactive sandbox | `app/stickers/page.tsx` | Tab / Chip / Switch clicks | React state + live `<Sticker peel />` | Presets (`flame`, `black-cat`, `star-burst`, `metal`, `dog`), sizes (`64, 96, 120`) |
 | 3D vinyl sticker hover peel | `usePeel` (all 70 stickers) | `packages/stickers-react/src/utils/usePeel.ts` | Mouse enter/leave (`peel={true}`) | React `hovered` + `perspective(600px) rotateX/Y translateY scale drop-shadow` | Tilt (`10deg`/`-10deg`), lift (`-8px`), scale (`1.08`), `350ms SPRING` |
+| Koi pond hero video & backdrop scrims | `HeroVideoBackground` | `components/landing/hero-video-background.tsx` | Page load / `IntersectionObserver` / reduced-motion | Native `<video>` + poster `<img>` + `opacity` fade (`500ms`) + `blur-[2.5px]` | Blur radius (`2.5px`), scrim opacity (`0.30`), bottom fade (`h-10 sm:h-12`) |
+| Catalog search bar & clear button | Search input & `✕` clear | `app/stickers/page.tsx` | Typing / Click `✕` | React `searchQuery` + `useDeferredValue` + Tailwind `focus:` ring | Placeholder text, `deferredQuery` filter fields |
+| Category filter tabs & counts | Filter tab bar | `app/stickers/page.tsx` | Tab click | React `selectedCategory` + pill active state (`duration-150`) | Categories (`all`, `mascots`, `characters`, `components`, `symbols`) |
+| Empty-state filter recovery | `"Reset Filters"` CTA | `app/stickers/page.tsx` | Click | Clears `selectedCategory` (`"all"`) & `searchQuery` (`""`) | Empty copy & suggested keywords |
+| Infinite scroll batch sentinel | Load-more pill | `app/stickers/page.tsx` | Scroll (`rootMargin: "600px"`) | `IntersectionObserver` + Tailwind `animate-pulse` emerald dot | `BATCH_SIZE` (`100`), `rootMargin` |
+| `#docs` mode, PM & copy buttons | Install/Usage code tabs | `app/stickers/page.tsx` | Click (`Direct Use` / `Dynamic` / `Copy`) | React `guideMode`, `guidePm`, `guideCopied` + 1800ms reset | Package managers (`npm`, `pnpm`, `yarn`, `bun`), timeout |
+| Inspector switches & SVG export | Inspector controls & `<svg>` | `app/stickers/page.tsx` | Slider / Swatch / Switch / Download click | DOM `XMLSerializer` + `Blob` download + `translate-x-[18px]` switch | Stage colors (`white`, `zinc`, `warm`, `blue`), size (`48`–`180`) |
+| Global smooth anchor scroll & selection | Root `<html>` & `::selection` | `app/layout.tsx`, `app/globals.css` | Anchor click / text drag highlight | Native CSS `scroll-smooth` + `::selection` amber colors | Selection bg (`#fef3c7`), text (`#78350f`) |
 
 ---
 
 ## 12. How to Recreate & Modify the Animations (5 Practical Guides)
 
 ### Example 1: Tune the Hero Parallax Intensity & Idle Float Speed
-- **Where:** `DraggableSticker` in [`app/page.tsx:54-135`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L54-L135), sticker instances at [`app/page.tsx:467-514`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L467-L514), and `@keyframes float` at [`app/page.tsx:366-369`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L366-L369).
-- **Safe Changes:** Increase `depth` props (currently `14`–`28`) to `35`–`50` for stronger parallax separation; change `-10px` in `@keyframes float` to `-18px` for deeper bobbing, or adjust `5 + delay` to `3.5 + delay` for faster motion.
+- **Where:** `DraggableSticker` in [`app/page.tsx:55-138`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L55-L138), sticker instances at [`app/page.tsx:484-531`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L484-L531), and `@keyframes float` at [`app/page.tsx:369-372`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L369-L372).
+- **Safe Recipe (Stronger Parallax + Snappier Float):**
+```tsx
+// app/page.tsx — increase depth prop on Hero DraggableStickers (currently 14..28)
+<DraggableSticker src="/stickers/cat.svg" size={100} rotate={25} depth={42} delay={2} />
+
+// app/page.tsx — deeper bobbing excursion & faster float cycle
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); } /* was -10px */
+}
+/* Layer 2 inline style: */
+animation: `float ${3.5 + delay}s ease-in-out ${delay * 0.6}s infinite` /* was 5 + delay */
+```
 - **Avoid Breaking:** Keep `translate` on Layer 1 (`parallax`), `animation` (`float`) on Layer 2 (`[data-float]`), and drag `translate`/`rotate`/`scale` on Layer 3. Combining `transform`/`translate` onto one element causes drag coordinates to conflict with CSS keyframes.
 - **Test:** Move cursor across hero, scroll past section 2 to verify `IntersectionObserver` pauses `[data-float]`, and drag a sticker to confirm `animationPlayState` pauses mid-drag.
 
 ### Example 2: Adjust Folder Card Fan-Out Angle & Lift Height
 - **Where:** `Folder` component at [`components/landing/folder.tsx:409-424, 460-472`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/folder.tsx#L409-L472) and card definitions at [`components/landing/folder.tsx:592-602`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/folder.tsx#L592-L602).
-- **Safe Changes:** In line `417`, change `c.rot * 0.6` (e.g., to `c.rot * 1.1` for wider fanning). In line `418`, change `c.lift - 5` (e.g., to `c.lift - 7.5` to lift higher; ensure top clearance fits comfortably inside the section padding). Change `i * 40ms` stagger on line `419`.
+- **Safe Recipe (Wider Card Spread + Higher Lift):**
+```tsx
+// components/landing/folder.tsx:417-419
+rotate: `${c.rot + (open ? c.rot * 1.1 : 0)}deg`,              // was c.rot * 0.6
+translate: `0 ${open ? c.lift - 7 : c.lift}em`,                  // was c.lift - 5
+transition: `translate 600ms ${SPRING} ${i * 55}ms, rotate 600ms ${SPRING} ${i * 55}ms`, // was i * 40
+```
 - **Avoid Breaking:** Sizes inside `Folder` rely on `1em = 1.78cqw` (`UNIT`). Express all lifts in `em` rather than `px` so responsive scaling stays intact across mobile and desktop.
 - **Test:** Hover and click-toggle (`pinned`) both `"Landing pages"` and `"Mobile apps"` folders at narrow (`375px`) and wide (`1280px`) viewports.
 
 ### Example 3: Customize the 3D Vinyl Peel Effect in `stick-blush`
 - **Where:** [`packages/stickers-react/src/utils/usePeel.ts:23-38`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/packages/stickers-react/src/utils/usePeel.ts#L23-L38).
-- **Safe Changes:** Adjust `rotateX(10deg) rotateY(-10deg)` (`14deg`/`-14deg` for dramatic curl), `translateY(-8px)` (`-12px` lift), `scale(1.08)`, `perspective(600px)`, or `350ms` timing/spring curve. Add `pointerEnter`/`pointerLeave` or `focus`/`blur` handlers alongside `mouseEnter`/`mouseLeave` if adding touch/keyboard accessibility.
+- **Safe Recipe (Stronger Corner Curl & Lift):**
+```ts
+// packages/stickers-react/src/utils/usePeel.ts:23-35
+const transform = hovered
+  ? `${baseTransform}perspective(600px) rotateX(14deg) rotateY(-14deg) translateY(-12px) scale(1.10)`
+  : `${baseTransform}perspective(600px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)`;
+
+const filter = hovered
+  ? `${baseFilter}drop-shadow(0 24px 30px rgba(0, 0, 0, 0.38))`
+  : (userStyle?.filter || "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05))");
+```
 - **Affected Components:** All 70 sticker components, the `/stickers` `#docs` live sandbox, and the `/stickers` Inspector modal.
-- **Rebuild & Test:** Run `npm run build:package` (or `npm run dev` inside `packages/stickers-react` during library edits), then inspect `/stickers#docs` and the Inspector modal with the `Peel on hover` toggle on and off.
+- **Rebuild & Test:** Run `npm run build:package`, then inspect `/stickers#docs` and the Inspector modal with the `Peel effect` toggle on and off.
 
 ### Example 4: Tune Smart Scroll Navbar Responsiveness
-- **Where:** `handleScroll` `useEffect` in [`app/page.tsx:266-305`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L266-L305) **and** its mirror copy in [`app/stickers/page.tsx:872-911`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/stickers/page.tsx#L872-L911).
-- **Safe Changes:** Lower `-8` -> `-4` for instant reveal on slightest upward nudge; change `14` -> `30` to keep navbar visible longer during slow downward reading; adjust `260ms` transition speed on `<header>`.
+- **Where:** `handleScroll` `useEffect` in [`app/page.tsx:269-308`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/page.tsx#L269-L308) **and** its mirror copy in [`app/stickers/page.tsx:872-911`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/app/stickers/page.tsx#L872-L911).
+- **Safe Recipe (Faster Upward Reveal + More Tolerant Downward Reading):**
+```ts
+// Inside handleScroll() in BOTH app/page.tsx and app/stickers/page.tsx:
+if (scrollAcc.current <= -4) {                 // was -8: reveal almost immediately scrolling up
+  setNavVisible(true);
+} else if (scrollAcc.current >= 28 && y > 90) { // was 14 & 70: stay visible longer scrolling down
+  setNavVisible(false);
+}
+```
 - **Important Note:** Because this logic is duplicated verbatim in both pages, modify both files to keep navigation consistent across `/` and `/stickers`.
 
 ### Example 5: Adjust `MotionBlur` Section Reveal Speed & Stagger
 - **Where:** `useInView` & `MotionBlur` in [`components/landing/folder.tsx`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/folder.tsx#L6-L91), [`components/landing/bento.tsx`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/bento.tsx#L21-L106), [`components/landing/sponsor.tsx`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/sponsor.tsx#L15-L83), [`components/landing/get-started.tsx`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/get-started.tsx#L8-L79), and [`components/landing/footer.tsx`](file:///Users/adhithyan/Documents/anti-gravity%20new%20folder/components/landing/footer.tsx#L15-L86).
-- **Safe Changes:** Adjust `blur = 8` -> `4`, initial `translate3d(0, 24px, 0)` -> `translate3d(0, 14px, 0)`, or `650ms`/`750ms` transitions.
-- **Avoid Breaking:** Always keep the `settled` timeout (`delay + 850` ms) strictly greater than `delay + max(transitionDuration)` (`750ms`). If `settled` fires early, the reveal snaps before finishing.
+- **Safe Recipe (Crisper, Shorter Reveal):**
+```tsx
+// Adjust default blur (8 -> 4), initial translate (24px -> 14px), and durations (650/750 -> 450/520)
+const t = setTimeout(() => setSettled(true), delay + 600); // keep strictly > delay + max(duration)
+
+style={{
+  opacity: inView ? 1 : 0,
+  transform: inView ? "translate3d(0, 0, 0)" : "translate3d(0, 14px, 0)",
+  filter: settled ? "none" : inView ? "blur(0px)" : `blur(${blur}px)`,
+  transition: settled
+    ? "none"
+    : `opacity 450ms ${EASE_OUT} ${delay}ms, transform 520ms ${EASE_OUT} ${delay}ms, filter 450ms ${EASE_OUT} ${delay}ms`,
+  willChange: settled ? "auto" : "opacity, transform",
+}}
+```
+- **Avoid Breaking:** Always keep the `settled` timeout (`delay + 600` / `850` ms) strictly greater than `delay + max(transitionDuration)`. If `settled` fires early, the reveal snaps before finishing.
 - **Test:** Hard-reload at scroll `y = 0`, verify above-fold sections appear cleanly, then scroll briskly to the footer to confirm every `MotionBlur` child settles cleanly with `willChange: "auto"`.
 
 ---

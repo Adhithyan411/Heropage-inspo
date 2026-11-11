@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Folder from "../components/landing/folder"
+import ScrollDrumShowcase from "../components/landing/scroll-drum-showcase"
 import Bento from "../components/landing/bento"
 import Sponsor from "../components/landing/sponsor"
 import GetStarted from "../components/landing/get-started"
@@ -697,6 +698,8 @@ export default function Home() {
       <div className="w-full">
         <Folder />
       </div>
+
+      <ScrollDrumShowcase />
 
       <Bento />
 

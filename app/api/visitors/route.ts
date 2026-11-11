@@ -1,16 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { ensureVisitorTables, getDb } from "../../../lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  ensureVisitorTables,
+  getDb,
+  isUndefinedTableError,
+} from "../../../lib/db";
 
-// Fallback in-memory visitor store when DATABASE_URL is not configured locally
+// Preserve the historical site key "stick-it-up" so existing Neon rows remain intact.
 const DEFAULT_SITE = "stick-it-up";
 const SITE_REGEX = /^[a-zA-Z0-9_\-\.]{1,64}$/;
-const memoryVisitors = new Map<
-  string,
-  { totalVisits: number; visitors: Map<string, number> }
->();
+const VISITOR_COOKIE_NAME = "sb_visitor_id";
+const VISITOR_TOKEN_REGEX = /^[a-zA-Z0-9_-]{16,128}$/;
 
-function getMemorySite(site: string) {
+interface MemoryVisitorRecord {
+  firstSeen: number;
+  lastSeen: number;
+  visitCount: number;
+}
+
+interface MemorySiteEntry {
+  totalVisits: number;
+  visitors: Map<string, MemoryVisitorRecord>;
+}
+
+// Local development / offline fallback when DATABASE_URL is not configured outside production.
+const memoryVisitors = new Map<string, MemorySiteEntry>();
+
+function getMemorySite(site: string): MemorySiteEntry {
   let entry = memoryVisitors.get(site);
   if (!entry) {
     entry = { totalVisits: 0, visitors: new Map() };
@@ -19,7 +35,7 @@ function getMemorySite(site: string) {
   return entry;
 }
 
-function corsHeaders() {
+function corsHeaders(): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -27,10 +43,19 @@ function corsHeaders() {
   };
 }
 
+function noStoreHeaders(): Record<string, string> {
+  return {
+    ...corsHeaders(),
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
+  };
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders(),
+    headers: noStoreHeaders(),
   });
 }
 
@@ -41,17 +66,63 @@ function sanitizeSite(input?: string | null): string {
   return clean;
 }
 
-function extractClientHash(req: NextRequest, site: string): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip") || "127.0.0.1";
-  const userAgent = req.headers.get("user-agent") || "unknown";
-  const customVisitorId = req.headers.get("x-visitor-id") || "";
+function sanitizeVisitorToken(input?: string | null): string | null {
+  if (!input) return null;
+  const clean = input.trim();
+  return VISITOR_TOKEN_REGEX.test(clean) ? clean : null;
+}
 
-  // One-way non-reversible SHA-256 hash for privacy-safe unique visitor identification
-  return crypto
+function resolveVisitorIdentity(
+  req: NextRequest,
+  site: string
+): { visitorToken: string; visitorHash: string; shouldSetCookie: boolean } {
+  const cookieToken = sanitizeVisitorToken(
+    req.cookies.get(VISITOR_COOKIE_NAME)?.value
+  );
+  const headerToken = sanitizeVisitorToken(req.headers.get("x-visitor-id"));
+  const visitorToken = cookieToken ?? headerToken ?? crypto.randomUUID();
+  const shouldSetCookie = cookieToken !== visitorToken;
+
+  // Hash an opaque per-browser UUID rather than network IPs so users behind shared NAT/proxies stay distinct.
+  const visitorHash = crypto
     .createHash("sha256")
-    .update(`${site}:${ip}:${userAgent}:${customVisitorId}`)
+    .update(`${site}:v2:${visitorToken}`)
     .digest("hex");
+
+  return { visitorToken, visitorHash, shouldSetCookie };
+}
+
+function attachVisitorCookie(
+  res: NextResponse,
+  visitorToken: string,
+  shouldSetCookie: boolean
+): NextResponse {
+  if (!shouldSetCookie) return res;
+  res.cookies.set({
+    name: VISITOR_COOKIE_NAME,
+    value: visitorToken,
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    secure: process.env.NODE_ENV === "production",
+  });
+  return res;
+}
+
+async function withVisitorTables<T>(
+  sql: ReturnType<typeof getDb>,
+  operation: () => Promise<T>
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isUndefinedTableError(error)) {
+      throw error;
+    }
+    await ensureVisitorTables(sql);
+    return await operation();
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -59,78 +130,75 @@ export async function GET(req: NextRequest) {
   const site = sanitizeSite(searchParams.get("site"));
 
   if (!process.env.DATABASE_URL) {
+    if (process.env.VERCEL_ENV === "production") {
+      return NextResponse.json(
+        {
+          success: false,
+          site,
+          error: "DATABASE_URL is not configured in production environment",
+        },
+        { status: 500, headers: noStoreHeaders() }
+      );
+    }
+
     const entry = getMemorySite(site);
     return NextResponse.json(
       {
+        success: true,
         site,
         unique_visitors: entry.visitors.size,
         total_visits: entry.totalVisits,
+        storage: "memory",
         fallback: true,
       },
-      {
-        headers: {
-          ...corsHeaders(),
-          "Cache-Control": "no-store, max-age=0",
-        },
-      }
+      { headers: noStoreHeaders() }
     );
   }
 
   try {
     const sql = getDb();
-    await ensureVisitorTables(sql);
-
-    // Query site stats
-    const rows = await sql`
-      SELECT site_name, total_visits, unique_visitors
-      FROM sites
-      WHERE site_name = ${site}
-      LIMIT 1;
-    `;
+    const rows = await withVisitorTables(sql, () =>
+      sql`
+        SELECT site_name, total_visits, unique_visitors
+        FROM sites
+        WHERE site_name = ${site}
+        LIMIT 1;
+      `
+    );
 
     if (rows.length === 0) {
-      // Auto-initialize site if not present
-      await sql`
-        INSERT INTO sites (site_name, total_visits, unique_visitors)
-        VALUES (${site}, 0, 0)
-        ON CONFLICT (site_name) DO NOTHING;
-      `;
-
       return NextResponse.json(
         {
+          success: true,
           site,
           unique_visitors: 0,
           total_visits: 0,
+          storage: "postgres",
         },
-        { headers: corsHeaders() }
+        { headers: noStoreHeaders() }
       );
     }
 
     const row = rows[0];
     return NextResponse.json(
       {
+        success: true,
         site: row.site_name,
         unique_visitors: Number(row.unique_visitors),
         total_visits: Number(row.total_visits),
+        storage: "postgres",
       },
-      {
-        headers: {
-          ...corsHeaders(),
-          "Cache-Control": "no-store, max-age=0",
-        },
-      }
+      { headers: noStoreHeaders() }
     );
   } catch (error) {
     console.error("Visitors GET error:", error);
-    // Graceful fallback response
     return NextResponse.json(
       {
+        success: false,
         site,
-        unique_visitors: 0,
-        total_visits: 0,
-        fallback: true,
+        error: "Failed to read visitor stats from database",
       },
-      { headers: corsHeaders() }
+      { status: 500, headers: noStoreHeaders() }
     );
   }
 }
@@ -151,138 +219,117 @@ export async function POST(req: NextRequest) {
   }
 
   const site = sanitizeSite(siteInput);
-  const visitorHash = extractClientHash(req, site);
+  const { visitorToken, visitorHash, shouldSetCookie } = resolveVisitorIdentity(
+    req,
+    site
+  );
 
   if (!process.env.DATABASE_URL) {
+    if (process.env.VERCEL_ENV === "production") {
+      return NextResponse.json(
+        {
+          success: false,
+          site,
+          error: "DATABASE_URL is not configured in production environment",
+        },
+        { status: 500, headers: noStoreHeaders() }
+      );
+    }
+
     const entry = getMemorySite(site);
     const now = Date.now();
-    const lastSeen = entry.visitors.get(visitorHash);
-    const isNewUnique = lastSeen === undefined;
-    const cooledDown = lastSeen !== undefined && now - lastSeen > 15 * 60 * 1000;
+    const existing = entry.visitors.get(visitorHash);
+    const isNewUnique = existing === undefined;
 
-    if (isNewUnique || cooledDown) {
-      entry.totalVisits += 1;
-    }
-    entry.visitors.set(visitorHash, now);
+    entry.totalVisits += 1;
+    entry.visitors.set(visitorHash, {
+      firstSeen: existing?.firstSeen ?? now,
+      lastSeen: now,
+      visitCount: (existing?.visitCount ?? 0) + 1,
+    });
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         success: true,
         site,
         unique_visitors: entry.visitors.size,
         total_visits: entry.totalVisits,
         is_new_unique: isNewUnique,
+        storage: "memory",
         fallback: true,
       },
-      {
-        headers: {
-          ...corsHeaders(),
-          "Cache-Control": "no-store, max-age=0",
-        },
-      }
+      { headers: noStoreHeaders() }
     );
+    return attachVisitorCookie(res, visitorToken, shouldSetCookie);
   }
 
   try {
     const sql = getDb();
-    await ensureVisitorTables(sql);
+    const updatedStats = await withVisitorTables(sql, async () => {
+      // Ensure the parent site row exists before the atomic visitor upsert references it via FK.
+      await sql`
+        INSERT INTO sites (site_name, total_visits, unique_visitors)
+        VALUES (${site}, 0, 0)
+        ON CONFLICT (site_name) DO NOTHING;
+      `;
 
-    // 1. Ensure site exists
-    await sql`
-      INSERT INTO sites (site_name, total_visits, unique_visitors)
-      VALUES (${site}, 0, 0)
-      ON CONFLICT (site_name) DO NOTHING;
-    `;
-
-    // 2. Check previous visit timestamp before upsert, then upsert visitor
-    // (xmax = 0) returns true if the row was freshly inserted (new unique visitor)
-    const visitorRows = await sql`
-      WITH prev AS (
-        SELECT last_visited_at
-        FROM site_visitors
-        WHERE site_name = ${site} AND visitor_hash = ${visitorHash}
-      ),
-      upserted AS (
-        INSERT INTO site_visitors (site_name, visitor_hash, first_visited_at, last_visited_at, visit_count)
-        VALUES (${site}, ${visitorHash}, NOW(), NOW(), 1)
-        ON CONFLICT (site_name, visitor_hash)
-        DO UPDATE SET
-          last_visited_at = NOW(),
-          visit_count = site_visitors.visit_count + 1
-        RETURNING (xmax = 0) AS is_new_unique
-      )
-      SELECT
-        upserted.is_new_unique,
-        COALESCE((SELECT (NOW() - prev.last_visited_at) > INTERVAL '15 minutes' FROM prev), FALSE) AS cooled_down
-      FROM upserted;
-    `;
-
-    const isNewUnique = Boolean(visitorRows[0]?.is_new_unique);
-    const cooledDown = Boolean(visitorRows[0]?.cooled_down);
-
-    let updatedStats;
-
-    if (isNewUnique) {
-      // Brand new unique visitor: increment unique_visitors AND total_visits
-      updatedStats = await sql`
+      return await sql`
+        WITH upsert_visitor AS (
+          INSERT INTO site_visitors (
+            site_name,
+            visitor_hash,
+            first_visited_at,
+            last_visited_at,
+            visit_count
+          )
+          VALUES (${site}, ${visitorHash}, NOW(), NOW(), 1)
+          ON CONFLICT (site_name, visitor_hash)
+          DO UPDATE SET
+            last_visited_at = NOW(),
+            visit_count = site_visitors.visit_count + 1
+          RETURNING (xmax = 0) AS is_new_unique
+        )
         UPDATE sites
         SET
-          unique_visitors = unique_visitors + 1,
-          total_visits = total_visits + 1,
+          unique_visitors = sites.unique_visitors + CASE WHEN upsert_visitor.is_new_unique THEN 1 ELSE 0 END,
+          total_visits = sites.total_visits + 1,
           updated_at = NOW()
-        WHERE site_name = ${site}
-        RETURNING unique_visitors, total_visits;
+        FROM upsert_visitor
+        WHERE sites.site_name = ${site}
+        RETURNING
+          sites.site_name,
+          sites.unique_visitors,
+          sites.total_visits,
+          upsert_visitor.is_new_unique;
       `;
-    } else if (cooledDown) {
-      // Returning visitor after at least 15 minutes: increment total_visits only
-      updatedStats = await sql`
-        UPDATE sites
-        SET
-          total_visits = total_visits + 1,
-          updated_at = NOW()
-        WHERE site_name = ${site}
-        RETURNING unique_visitors, total_visits;
-      `;
-    } else {
-      // Rapid refresh or navigation within 15 minutes: do not increment to prevent spam
-      updatedStats = await sql`
-        SELECT unique_visitors, total_visits
-        FROM sites
-        WHERE site_name = ${site}
-        LIMIT 1;
-      `;
-    }
+    });
 
     const row = updatedStats[0];
+    if (!row) {
+      throw new Error(`Site row "${site}" missing after upsert`);
+    }
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         success: true,
-        site,
-        unique_visitors: Number(row?.unique_visitors ?? 0),
-        total_visits: Number(row?.total_visits ?? 0),
-        is_new_unique: isNewUnique,
+        site: row.site_name,
+        unique_visitors: Number(row.unique_visitors),
+        total_visits: Number(row.total_visits),
+        is_new_unique: Boolean(row.is_new_unique),
+        storage: "postgres",
       },
-      {
-        headers: {
-          ...corsHeaders(),
-          "Cache-Control": "no-store, max-age=0",
-        },
-      }
+      { headers: noStoreHeaders() }
     );
+    return attachVisitorCookie(res, visitorToken, shouldSetCookie);
   } catch (error) {
     console.error("Visitors POST error:", error);
-    // Graceful fallback response
     return NextResponse.json(
       {
         success: false,
         site,
-        unique_visitors: 0,
-        total_visits: 0,
-        fallback: true,
+        error: "Failed to record visit in database",
       },
-      { headers: corsHeaders() }
+      { status: 500, headers: noStoreHeaders() }
     );
   }
 }
-
