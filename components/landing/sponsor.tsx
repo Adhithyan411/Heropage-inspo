@@ -10,7 +10,7 @@ const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
 const GITHUB_URL = "https://github.com/sponsors/Adhithyan411";
 const COFFEE_URL = "https://github.com/sponsors/Adhithyan411";
-const TWITTER_URL = "https://github.com/Adhithyan411";
+const TWITTER_URL = "https://x.com/Klyromotion";
 
 function useInView({
   threshold = 0.08,
@@ -311,7 +311,7 @@ function TwitterTile({
           </span>
         </div>
 
-        <Tip label="Follow on GitHub" sublabel="@Adhithyan411" />
+        <Tip label="Follow on X" sublabel="@Klyromotion" />
       </a>
     </li>
   );
@@ -340,7 +340,7 @@ export default function Sponsor() {
         }
       `}</style>
 
-     
+
       {/* Clean section content without border or shadow */}
       <div className="relative mx-auto max-w-3xl sm:max-w-4xl px-2 sm:px-4">
         {/* Heading: Geist font, normal font weight font-sans */}
