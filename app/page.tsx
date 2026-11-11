@@ -173,7 +173,7 @@ function TotalDownloadsCounter() {
   useEffect(() => {
     let unmounted = false;
 
-    fetch("/api/npm-downloads?package=stick-it-up")
+    fetch("/api/npm-downloads?package=stick-blush")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (unmounted) return;
@@ -215,16 +215,16 @@ function TotalDownloadsCounter() {
       style={{ animation: "rise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) 1150ms both" }}
     >
       <a
-        href="https://www.npmjs.com/package/stick-it-up"
+        href="https://www.npmjs.com/package/stick-blush"
         target="_blank"
         rel="noreferrer"
         className="group flex flex-col items-center transition-opacity hover:opacity-90"
-        title="View stick-it-up on npm"
+        title="View stick-blush on npm"
       >
         <img
           data-sticker
           src="/stickers/Component-66.svg"
-          alt="stick-it-up"
+          alt="stick-blush"
           draggable={false}
           className="h-20 w-20 cursor-pointer select-none transition-transform duration-300 hover:scale-110 hover:-rotate-3 active:scale-95"
           style={{ transitionTimingFunction: SPRING }}
@@ -320,7 +320,7 @@ export default function Home() {
 
   async function copyCommand() {
     try {
-      await navigator.clipboard.writeText("npm i stick-it-up@latest");
+      await navigator.clipboard.writeText("npm i stick-blush@latest");
       setCopied(true);
     } catch (error) {
       console.error("Failed to copy command:", error);
@@ -423,7 +423,7 @@ export default function Home() {
             {[
               { label: "Stickers", href: "/stickers" },
               { label: "Docs", href: "/stickers#docs" },
-              { label: "npm", href: "https://www.npmjs.com/package/stick-it-up" },
+              { label: "npm", href: "https://www.npmjs.com/package/stick-blush" },
             ].map((link) => (
               <li key={link.label}>
                 {link.href.startsWith("http") ? (
@@ -562,7 +562,7 @@ export default function Home() {
             {/* Install button */}
             <button
               onClick={copyCommand}
-              aria-label={copied ? "Copied to clipboard" : "Copy npm i stick-it-up@latest"}
+              aria-label={copied ? "Copied to clipboard" : "Copy npm i stick-blush@latest"}
               className={`group relative inline-flex cursor-pointer items-center gap-3 rounded-xl
               border bg-gradient-to-b
               py-3 pl-4 pr-5 font-mono text-sm
@@ -582,7 +582,7 @@ export default function Home() {
                       : "translate-y-0 opacity-100 blur-0"
                     }`}
                 >
-                  npm i stick-it-up@latest
+                  npm i stick-blush@latest
                 </span>
 
                 <span

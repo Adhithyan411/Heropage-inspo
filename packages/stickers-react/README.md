@@ -1,4 +1,4 @@
-# stick-it-up
+# stick-blush
 
 > Premium vector, metallic chrome, and pixel art aesthetic sticker components for React & Next.js.
 
@@ -10,16 +10,16 @@ A collection of 65+ vector graphic stickers featuring specular metallic chrome r
 
 ```bash
 # npm (recommended: @latest)
-npm install stick-it-up@latest
+npm install stick-blush@latest
 
 # pnpm
-pnpm add stick-it-up@latest
+pnpm add stick-blush@latest
 
 # bun
-bun add stick-it-up@latest
+bun add stick-blush@latest
 
 # yarn
-yarn add stick-it-up@latest
+yarn add stick-blush@latest
 ```
 
 ---
@@ -38,7 +38,7 @@ import {
   PipRocketSticker,
   BlobBurstSticker,
   StarBurstSticker,
-} from "stick-it-up";
+} from "stick-blush";
 
 export function App() {
   return (
@@ -62,7 +62,7 @@ export function App() {
 ### 2. Dynamic Component (`<Sticker name="..." />`)
 
 ```tsx
-import { Sticker, type StickerName } from "stick-it-up";
+import { Sticker, type StickerName } from "stick-blush";
 
 export function StickerGallery() {
   const stickers: StickerName[] = [

@@ -159,7 +159,7 @@ export interface DynamicStickerProps extends StickerProps {
  *
  * @example
  * ```tsx
- * import { Sticker } from "stick-it-up";
+ * import { Sticker } from "stick-blush";
  *
  * <Sticker name="devil-cone" size={130} peel />
  * <Sticker name="red-cat" size={130} peel />

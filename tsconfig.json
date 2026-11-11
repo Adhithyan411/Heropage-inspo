@@ -20,8 +20,8 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "stick-it-up": ["./packages/stickers-react/src/index.ts"],
-      "stick-it-up/*": ["./packages/stickers-react/src/*"]
+      "stick-blush": ["./packages/stickers-react/src/index.ts"],
+      "stick-blush/*": ["./packages/stickers-react/src/*"]
     }
   },
   "include": [

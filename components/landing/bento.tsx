@@ -636,7 +636,7 @@ export default function Bento() {
 
   async function copyCommand() {
     try {
-      await navigator.clipboard.writeText("npm i stick-it-up@latest");
+      await navigator.clipboard.writeText("npm i stick-blush@latest");
       setCopied(true);
     } catch (error) {
       console.error("Failed to copy command:", error);
@@ -767,7 +767,7 @@ export default function Bento() {
                     {/* Install button (identical to page.tsx) */}
                     <button
                       onClick={copyCommand}
-                      aria-label={copied ? "Copied to clipboard" : "Copy npm i stick-it-up@latest"}
+                      aria-label={copied ? "Copied to clipboard" : "Copy npm i stick-blush@latest"}
                       className={`group relative mt-6 inline-flex cursor-pointer items-center gap-3 rounded-xl
                         border bg-gradient-to-b
                         py-3 pl-4 pr-5 font-mono text-sm
@@ -789,7 +789,7 @@ export default function Bento() {
                               : "translate-y-0 opacity-100 blur-0"
                           }`}
                         >
-                          npm i stick-it-up@latest
+                          npm i stick-blush@latest
                         </span>
 
                         <span

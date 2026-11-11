@@ -5,11 +5,11 @@
   <p>A collection of 65+ handcrafted vector, metallic chrome, and pixel art sticker components for React & Next.js with realistic 3D vinyl peel physics — built by Adhithyan S.</p>
 
   <p>
-    <a href="https://www.npmjs.com/package/stick-it-up">
-      <img src="https://img.shields.io/npm/v/stick-it-up?color=10b981&label=npm" alt="npm version" />
+    <a href="https://www.npmjs.com/package/stick-blush">
+      <img src="https://img.shields.io/npm/v/stick-blush?color=10b981&label=npm" alt="npm version" />
     </a>
-    <a href="https://www.npmjs.com/package/stick-it-up">
-      <img src="https://img.shields.io/npm/dm/stick-it-up?color=6366f1" alt="npm downloads" />
+    <a href="https://www.npmjs.com/package/stick-blush">
+      <img src="https://img.shields.io/npm/dm/stick-blush?color=6366f1" alt="npm downloads" />
     </a>
     <a href="LICENSE">
       <img src="https://img.shields.io/badge/License-MIT-blue" alt="License" />
@@ -54,16 +54,16 @@ Install the package via your package manager of choice:
 
 ```bash
 # npm (recommended: use @latest)
-npm install stick-it-up@latest
+npm install stick-blush@latest
 
 # pnpm
-pnpm add stick-it-up@latest
+pnpm add stick-blush@latest
 
 # bun
-bun add stick-it-up@latest
+bun add stick-blush@latest
 
 # yarn
-yarn add stick-it-up@latest
+yarn add stick-blush@latest
 ```
 
 ---
@@ -75,7 +75,7 @@ yarn add stick-it-up@latest
 Every sticker is exported as a standalone, tree-shakeable React component:
 
 ```tsx
-import { FlameSticker, MetalSticker, NoriCoffeeSticker } from "stick-it-up";
+import { FlameSticker, MetalSticker, NoriCoffeeSticker } from "stick-blush";
 
 export default function Hero() {
   return (
@@ -98,7 +98,7 @@ export default function Hero() {
 Need to dynamically display stickers based on state, props, or CMS data? Use the generic `<Sticker />` component:
 
 ```tsx
-import { Sticker, type StickerName } from "stick-it-up";
+import { Sticker, type StickerName } from "stick-blush";
 
 const featured: StickerName[] = [
   "flame",
@@ -225,7 +225,7 @@ components/
 │   └── stickers/             # Full stickers catalog & documentation
 ├── components/               # Landing page UI sections
 ├── packages/
-│   └── stickers-react/       # The "stick-it-up" npm package source
+│   └── stickers-react/       # The "stick-blush" npm package source
 │       ├── src/
 │       │   ├── stickers/     # All 65 sticker React components
 │       │   ├── components/   # Generic <Sticker /> wrapper

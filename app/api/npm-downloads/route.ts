@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const DEFAULT_PACKAGE = "stick-it-up";
+const DEFAULT_PACKAGE = "stick-blush";
 const PACKAGE_REGEX = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
@@ -49,7 +49,7 @@ function createDateChunks(startDateStr: string, endDateStr: string): Array<{ sta
  */
 async function fetchTotalDownloads(pkg: string): Promise<{ downloads: number; start: string; end: string }> {
   const todayStr = formatDate(new Date());
-  let createdStr = "2026-11-01"; // Default conservative start for stick-it-up
+  let createdStr = "2026-11-01"; // Default conservative start for stick-blush
 
   // 1. Fetch package creation date from registry
   try {

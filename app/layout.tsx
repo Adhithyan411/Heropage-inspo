@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   keywords: [
     "stickers",
     "react stickers",
-    "stick-it-up",
+    "stick-blush",
     "vinyl peel sticker",
     "holographic sticker",
     "chrome stickers",
@@ -118,7 +118,7 @@ const jsonLd = {
     {
       "@type": "SoftwareApplication",
       "@id": `${siteUrl}/#software`,
-      name: "stick-it-up",
+      name: "stick-blush",
       applicationCategory: "DeveloperApplication",
       operatingSystem: "Any",
       offers: {
@@ -129,7 +129,7 @@ const jsonLd = {
       description:
         "Premium vector, holographic & chrome aesthetic sticker components for React with 3D vinyl peel.",
       url: siteUrl,
-      downloadUrl: "https://www.npmjs.com/package/stick-it-up",
+      downloadUrl: "https://www.npmjs.com/package/stick-blush",
     },
   ],
 };

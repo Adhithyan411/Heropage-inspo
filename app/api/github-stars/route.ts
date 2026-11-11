@@ -5,7 +5,7 @@ export async function GET() {
     const res = await fetch("https://api.github.com/repos/Adhithyan411/Sticky", {
       headers: {
         Accept: "application/vnd.github.v3+json",
-        "User-Agent": "stick-it-up-app",
+        "User-Agent": "stick-blush-app",
       },
       next: { revalidate: 300 },
     });

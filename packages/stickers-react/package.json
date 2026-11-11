@@ -1,6 +1,6 @@
 {
-  "name": "stick-it-up",
-  "version": "0.3.0",
+  "name": "stick-blush",
+  "version": "0.1.0",
   "description": "Premium vector, holographic & chrome aesthetic sticker components for React",
   "author": {
     "name": "Adhithyan S",
@@ -43,7 +43,7 @@
     "react",
     "stickers",
     "sticker-pack",
-    "stick-it-up",
+    "stick-blush",
     "svg",
     "chrome",
     "metallic",

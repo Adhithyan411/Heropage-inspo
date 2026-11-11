@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef, useDeferredValue } from "react";
 import Link from "next/link";
 import { LuCopyCheck, LuCopy } from "react-icons/lu";
-import { Sticker, type StickerName } from "stick-it-up";
+import { Sticker, type StickerName } from "stick-blush";
 import Footer from "../../components/landing/footer";
 import { VisitorCounter, GitHubStarButton } from "../../components/landing/nav-actions";
 
@@ -31,7 +31,7 @@ interface CatalogItem {
 }
 
 const CATALOG: CatalogItem[] = [
-  /* Built-in React Components (stick-it-up) */
+  /* Built-in React Components (stick-blush) */
   {
     id: "svg-face",
     name: "face",
@@ -955,10 +955,10 @@ export default function StickersCatalogPage() {
   }, []);
 
   const pmCommands = {
-    npm: "npm i stick-it-up@latest",
-    pnpm: "pnpm add stick-it-up@latest",
-    bun: "bun add stick-it-up@latest",
-    yarn: "yarn add stick-it-up@latest",
+    npm: "npm i stick-blush@latest",
+    pnpm: "pnpm add stick-blush@latest",
+    bun: "bun add stick-blush@latest",
+    yarn: "yarn add stick-blush@latest",
   };
 
   async function copyGuideInstall() {
@@ -972,10 +972,10 @@ export default function StickersCatalogPage() {
 
   async function copyGuideCode() {
     const exportName = getComponentExportName(guideSticker);
-    const directCode = `import { ${exportName} } from "stick-it-up";\n\nexport default function Hero() {\n  return (\n    <${exportName} \n      size={${guideSize}}${guidePeel ? " \n      peel" : ""
+    const directCode = `import { ${exportName} } from "stick-blush";\n\nexport default function Hero() {\n  return (\n    <${exportName} \n      size={${guideSize}}${guidePeel ? " \n      peel" : ""
       } \n    />\n  );\n}`;
 
-    const dynamicCode = `import { Sticker } from "stick-it-up";\n\nexport default function Hero() {\n  return (\n    <Sticker \n      name="${guideSticker}" \n      size={${guideSize}}${guidePeel ? " \n      peel" : ""
+    const dynamicCode = `import { Sticker } from "stick-blush";\n\nexport default function Hero() {\n  return (\n    <Sticker \n      name="${guideSticker}" \n      size={${guideSize}}${guidePeel ? " \n      peel" : ""
       } \n    />\n  );\n}`;
 
     const code =
@@ -1067,7 +1067,7 @@ export default function StickersCatalogPage() {
 
   async function copyInstall() {
     try {
-      await navigator.clipboard.writeText("npm i stick-it-up@latest");
+      await navigator.clipboard.writeText("npm i stick-blush@latest");
       setInstallCopied(true);
     } catch (err) {
       console.error(err);
@@ -1078,7 +1078,7 @@ export default function StickersCatalogPage() {
     if (e) e.stopPropagation();
     const stickerName = item.componentName || item.name;
     const compName = getComponentExportName(stickerName);
-    const code = `import { ${compName} } from "stick-it-up";\n\n<${compName} size={96} peel />`;
+    const code = `import { ${compName} } from "stick-blush";\n\n<${compName} size={96} peel />`;
 
     try {
       await navigator.clipboard.writeText(code);
@@ -1180,7 +1180,7 @@ export default function StickersCatalogPage() {
             </li>
             <li>
               <a
-                href="https://www.npmjs.com/package/stick-it-up"
+                href="https://www.npmjs.com/package/stick-blush"
                 target="_blank"
                 rel="noreferrer"
                 className="rounded-lg px-3.5 py-2 text-sm font-medium text-zinc-600 transition-colors duration-150 hover:bg-zinc-100 hover:text-zinc-900"
@@ -1224,7 +1224,7 @@ export default function StickersCatalogPage() {
           <button
             onClick={copyInstall}
             type="button"
-            aria-label={installCopied ? "Copied to clipboard" : "Copy npm i stick-it-up@latest"}
+            aria-label={installCopied ? "Copied to clipboard" : "Copy npm i stick-blush@latest"}
             className={`group inline-flex items-center gap-3 rounded-full border px-3.5 py-2 shadow-[0_1px_2px_rgba(0,0,0,0.04)] outline-none transition-all duration-200 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-zinc-900/20 focus-visible:ring-offset-2 ${installCopied
                 ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-100/60"
                 : "border-zinc-200/90 bg-white hover:border-zinc-300 hover:bg-zinc-50/60"
@@ -1238,7 +1238,7 @@ export default function StickersCatalogPage() {
                     : "translate-y-0 opacity-100 blur-0 text-zinc-500 group-hover:text-zinc-700"
                   }`}
               >
-                <span className="mr-1.5 select-none text-zinc-400">$</span>npm i stick-it-up@latest
+                <span className="mr-1.5 select-none text-zinc-400">$</span>npm i stick-blush@latest
               </span>
 
               <span
@@ -1578,7 +1578,7 @@ export default function StickersCatalogPage() {
                       </button>
                     </div>
                     <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-zinc-950">
-                      <code>{guideMode === "direct" ? `import { ${getComponentExportName(guideSticker)} } from "stick-it-up";
+                      <code>{guideMode === "direct" ? `import { ${getComponentExportName(guideSticker)} } from "stick-blush";
 
 export default function Hero() {
   return (
@@ -1586,7 +1586,7 @@ export default function Hero() {
       size={${guideSize}}${guidePeel ? "\n      peel" : ""}
     />
   );
-}` : `import { Sticker } from "stick-it-up";
+}` : `import { Sticker } from "stick-blush";
 
 export default function Hero() {
   return (
@@ -1754,10 +1754,10 @@ export default function Hero() {
           const stickerName = activeItem.componentName || activeItem.name;
           const componentPascalName = getComponentExportName(stickerName);
 
-          const namedCode = `import { ${componentPascalName} } from "stick-it-up";\n\n<${componentPascalName}\n  size={${inspectorSize}}${inspectorPeel ? "\n  peel" : ""
+          const namedCode = `import { ${componentPascalName} } from "stick-blush";\n\n<${componentPascalName}\n  size={${inspectorSize}}${inspectorPeel ? "\n  peel" : ""
             }\n/>`;
 
-          const dynamicCode = `import { Sticker } from "stick-it-up";\n\n<Sticker\n  name="${stickerName}"\n  size={${inspectorSize}}${inspectorPeel ? "\n  peel" : ""
+          const dynamicCode = `import { Sticker } from "stick-blush";\n\n<Sticker\n  name="${stickerName}"\n  size={${inspectorSize}}${inspectorPeel ? "\n  peel" : ""
             }\n/>`;
 
           const code = snippetTab === "named" ? namedCode : dynamicCode;

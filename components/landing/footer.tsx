@@ -109,7 +109,7 @@ const COLUMNS: FooterColumn[] = [
     links: [
       { label: "Stickers", href: "/stickers", sticker: "/stickers/star.svg", rot: 12 },
       { label: "Docs", href: "/stickers#docs", sticker: "/stickers/Sparkles.svg", rot: -8 },
-      { label: "npm", href: "https://www.npmjs.com/package/stick-it-up", sticker: "/stickers/blueberry.svg", rot: 6 },
+      { label: "npm", href: "https://www.npmjs.com/package/stick-blush", sticker: "/stickers/blueberry.svg", rot: 6 },
       { label: "Releases", href: "https://github.com/Adhithyan411/Sticky/releases", sticker: "/stickers/Flame.svg", rot: -10 },
     ],
   },

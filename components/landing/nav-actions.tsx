@@ -74,7 +74,7 @@ export function VisitorCounter({ site = "stick-it-up" }: { site?: string }) {
 }
 
 // total npm downloads badge
-export function NpmDownloadsBadge({ pkg = "stick-it-up" }: { pkg?: string }) {
+export function NpmDownloadsBadge({ pkg = "stick-blush" }: { pkg?: string }) {
   const [downloads, setDownloads] = useState<number | null>(null);
 
   useEffect(() => {
