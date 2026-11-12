@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/stickers/logo.svg" alt="Stick It Up Logo" width="88" height="88" />
+  <img src="public/stickers/logo.svg" alt="new" width="88" height="88" />
   <h1>Stick It Up</h1>
   <p><strong>Give your website the kind of personality it deserves.</strong></p>
   <p>A collection of 65+ handcrafted vector, metallic chrome, and pixel art sticker components for React & Next.js with realistic 3D vinyl peel physics — built by Adhithyan S.</p>
