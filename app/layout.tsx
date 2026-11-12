@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { HeroToaster } from "@/components/heroes/hero-toaster";
 import "./globals.css";
+
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,33 +26,29 @@ const siteUrl =
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : "https://stickitupp.vercel.app");
+    : "http://localhost:3000");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Stick It Up — Stickers for your UI",
-    template: "%s | Stick It Up",
+    default: "HeroAtlas — Website Hero Inspiration Library",
+    template: "%s | HeroAtlas",
   },
   description:
-    "Give your website the kind of personality that makes people stick around. A sticker library for React with 3D vinyl hover peel, chrome emblems, and playful vector decals.",
-  applicationName: "Stick It Up",
+    "Discover curated website hero-section designs, typography pairings, color palettes, and layout architectures for website builders, designers, developers, and founders.",
+  applicationName: "HeroAtlas",
   keywords: [
-    "stickers",
-    "react stickers",
-    "stick-blush",
-    "vinyl peel sticker",
-    "holographic sticker",
-    "chrome stickers",
-    "interactive stickers",
-    "react component stickers",
-    "svg decals",
-    "ui stickers",
-    "web animations",
+    "website hero inspiration",
+    "hero section design",
+    "landing page hero",
+    "web design library",
+    "ui layout inspiration",
+    "typography pairings",
+    "hero templates",
   ],
   authors: [{ name: "Adhithyan S", url: "https://github.com/Adhithyan411" }],
   creator: "Adhithyan S",
-  publisher: "Stick It Up",
+  publisher: "HeroAtlas",
   formatDetection: {
     email: false,
     address: false,
@@ -55,30 +58,19 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Stick It Up — Stickers for your UI",
+    title: "HeroAtlas — Website Hero Inspiration Library",
     description:
-      "Give your website the kind of personality that makes people stick around. A sticker library for React with 3D vinyl peel effects.",
+      "Discover curated website hero-section designs, typography pairings, and layout architectures for modern web builders.",
     url: siteUrl,
-    siteName: "Stick It Up",
+    siteName: "HeroAtlas",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Stick It Up — Give your website the kind of personality that makes people stick around.",
-        type: "image/png",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stick It Up — Stickers for your UI",
+    title: "HeroAtlas — Website Hero Inspiration Library",
     description:
-      "Give your website the kind of personality that makes people stick around. A sticker library for React.",
-    images: ["/og-image.png"],
-    creator: "@Adhithyan411",
+      "Discover curated website hero-section designs, typography pairings, and layout architectures.",
   },
   robots: {
     index: true,
@@ -93,10 +85,8 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/stickers/logo.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
     ],
-    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -107,29 +97,9 @@ const jsonLd = {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
-      name: "Stick It Up",
-      description: "Delightful React vinyl and holographic stickers for your UI.",
-      publisher: {
-        "@type": "Person",
-        name: "Adhithyan S",
-        url: "https://github.com/Adhithyan411",
-      },
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": `${siteUrl}/#software`,
-      name: "stick-blush",
-      applicationCategory: "DeveloperApplication",
-      operatingSystem: "Any",
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "USD",
-      },
+      name: "HeroAtlas — Website Hero Inspiration Library",
       description:
-        "Premium vector, holographic & chrome aesthetic sticker components for React with 3D vinyl peel.",
-      url: siteUrl,
-      downloadUrl: "https://www.npmjs.com/package/stick-blush",
+        "A curated platform where website builders, designers, developers, and founders discover website hero-section inspiration.",
     },
   ],
 };
@@ -140,11 +110,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
+      className={`${plusJakarta.variable} ${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wdth,wght,ROND@6..144,25..151,1..1000,0..100&family=Google+Sans+Code:wght@400..700&display=swap"
+          rel="stylesheet"
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Geist+Pixel&family=Instrument+Serif&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Patrick+Hand&family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap"
           rel="stylesheet"
@@ -154,8 +128,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
+      <body className="min-h-full flex flex-col bg-[#F8F4EE] text-[#1A0E08] font-sans selection:bg-orange-100 selection:text-[#7A2306]">
         {children}
+        <HeroToaster />
         <Analytics />
       </body>
     </html>
