@@ -11,6 +11,7 @@ const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const GITHUB_URL = "https://github.com/sponsors/Adhithyan411";
 const COFFEE_URL = "https://github.com/sponsors/Adhithyan411";
 const TWITTER_URL = "https://x.com/Klyromotion";
+const DISCORD_URL = "https://discord.gg/FkQG63Fj5N";
 
 function useInView({
   threshold = 0.08,
